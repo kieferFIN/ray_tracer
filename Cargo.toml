@@ -5,3 +5,5 @@ authors = ["kiefer <eero.manty@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+image = "*"
+nalgebra = "0.16"
