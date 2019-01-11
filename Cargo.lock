@@ -337,6 +337,14 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "ray_tracer"
+version = "0.1.0"
+dependencies = [
+ "image 0.20.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.16.13 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "rayon"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -386,14 +394,6 @@ dependencies = [
  "lzw 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-derive 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "tray_racer"
-version = "0.1.0"
-dependencies = [
- "image 0.20.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nalgebra 0.16.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
