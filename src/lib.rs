@@ -1,7 +1,12 @@
-pub struct World{
+#[macro_use]
+mod builder;
 
-}
+mod camera;
+mod world;
 
-pub struct Camera{
+pub use self::world::World;
+pub use self::camera::{Camera, CamBuilder};
 
-}
+
+
+
