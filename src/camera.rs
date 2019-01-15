@@ -5,7 +5,7 @@ use image::ImageBuffer;
 use crate::world::World;
 use crate::utils::Ray;
 
-
+/*
 builder!(CamBuilder => Camera{
     orig: Vector= Vector::repeat(0.0),
     size: (u32,u32) = (600,400),
@@ -13,16 +13,42 @@ builder!(CamBuilder => Camera{
     up: Vector= Vector::y(),
     horizontal_angle: u32 = 65
 });
+*/
+pub struct Camera {
+    orig: Vector,
+    width: u32,
+    height: u32,
+    upper_left: Vector,
+    dy: Vector,
+    dx: Vector
+}
 
-impl Camera{
-    pub fn take_pic(&self, world: &World) -> ImageBuffer<Color,Vec<u8>> {
+pub struct CameraBuilder {
+    pub   orig: Vector,
+    pub   size: (u32, u32),
+    pub   dir: Vector,
+    pub   up: Vector,
+    pub   horizontal_angle: u32,
+}
 
+impl CameraBuilder {
+    pub fn new() -> CameraBuilder {
+        CameraBuilder {
+            orig: Vector::repeat(0.0),
+            size: (600, 400),
+            dir: Vector::z(),
+            up: Vector::y(),
+            horizontal_angle: 65,
+        }
+    }
+
+    pub fn build(&self) -> Camera {
+        let orig =self.orig;
         let width= self.size.0;
         let height= self.size.1;
         let (upper_left, dx, dy) = {
             let ratio = height as f64 / width as f64;
             let half_angle = (self.horizontal_angle as f64 *0.5).to_radians();
-            let orig = self.orig;
             let dir = self.dir.normalize();
             let right = dir.cross(&self.up).normalize();
             let down = dir.cross(&right).normalize();
@@ -37,12 +63,27 @@ impl Camera{
             (upper_left, dx, dy)
         };
 
+        Camera {
+            orig,
+            width,
+            height,
+            upper_left,
+            dy,
+            dx
 
-        let mut pic = ImageBuffer::new(width,height);
+        }
+    }
+}
+
+
+impl Camera{
+    pub fn take_pic(&self, world: &World) -> ImageBuffer<Color,Vec<u8>> {
+
+        let mut pic = ImageBuffer::new(self.width,self.height);
 
         for (x,y,p) in pic.enumerate_pixels_mut(){
 
-            let c = world.shoot_ray(&Ray::look_at(self.orig,upper_left + dx * x as f64 + dy * y as f64));
+            let c = world.shoot_ray(&Ray::look_at(self.orig,self.upper_left + self.dx * x as f64 + self.dy * y as f64));
             *p=c;
         };
         pic

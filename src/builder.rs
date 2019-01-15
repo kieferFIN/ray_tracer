@@ -1,3 +1,5 @@
+// http://jadpole.github.io/rust/builder-macro
+
 #[macro_export]
 macro_rules! builder {
     ( $src_name:ident => $dest_name:ident {
@@ -9,15 +11,13 @@ macro_rules! builder {
         }
 
         pub struct $src_name {
-            $( $attr_name : $attr_type ),*
+            $( pub $attr_name : $attr_type ),*
         }
 
         impl $src_name {
             pub fn new() -> $src_name {
                 $src_name {
-                    $(
-                        $attr_name : $attr_default
-                    ),*
+                    $( $attr_name : $attr_default ),*
                 }
             }
 
@@ -28,13 +28,6 @@ macro_rules! builder {
                     $( $attr_name : self.$attr_name ),*
                 }
             }
-
-            $(
-                pub fn $attr_name(&mut self, value: $attr_type) -> &mut Self {
-                    self.$attr_name = value;
-                    self
-                }
-            )*
         }
     }
 }

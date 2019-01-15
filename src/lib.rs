@@ -7,8 +7,8 @@ mod world;
 mod utils;
 
 pub use self::types::Vector;
-pub use self::world::World;
-pub use self::camera::{Camera, CamBuilder};
+pub use self::world::{World, WorldBuilder};
+pub use self::camera::{Camera, CameraBuilder};
 
 
 
