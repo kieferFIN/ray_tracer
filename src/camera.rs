@@ -1,58 +1,50 @@
 
+use crate::types::*;
 
-use nalgebra::Vector3;
-use image::{ImageBuffer, Rgb};
+use image::ImageBuffer;
 use crate::world::World;
+use crate::utils::Ray;
+
 
 builder!(CamBuilder => Camera{
-    orig: Vector3<f64> = Vector3::repeat(0.0),
+    orig: Vector= Vector::repeat(0.0),
     size: (u32,u32) = (600,400),
-    dir: Vector3<f64> = Vector3::new(0.0,0.0,1.0),
-    up: Vector3<f64>= Vector3::new(0.0,1.0,0.0)
+    dir: Vector = Vector::z(),
+    up: Vector= Vector::y(),
+    horizontal_angle: u32 = 65
 });
 
 impl Camera{
-    pub fn take_pic(&self, world: &World) -> ImageBuffer<Rgb<u8>,Vec<u8>> {
-        ImageBuffer::new(self.size.0,self.size.1)
+    pub fn take_pic(&self, world: &World) -> ImageBuffer<Color,Vec<u8>> {
 
+        let width= self.size.0;
+        let height= self.size.1;
+        let (upper_left, dx, dy) = {
+            let ratio = height as f64 / width as f64;
+            let half_angle = (self.horizontal_angle as f64 *0.5).to_radians();
+            let orig = self.orig;
+            let dir = self.dir.normalize();
+            let right = dir.cross(&self.up).normalize();
+            let down = dir.cross(&right).normalize();
+
+            let w  = half_angle.tan()* 2.0;
+            let h = w * ratio;
+            let width_vector = w * right;
+            let height_vector = h * down;
+            let upper_left = orig + dir - down / 2.0 - right / 2.0;
+            let dx = width_vector / width as f64;
+            let dy = height_vector / height as f64;
+            (upper_left, dx, dy)
+        };
+
+
+        let mut pic = ImageBuffer::new(width,height);
+
+        for (x,y,p) in pic.enumerate_pixels_mut(){
+
+            let c = world.shoot_ray(&Ray::look_at(self.orig,upper_left + dx * x as f64 + dy * y as f64));
+            *p=c;
+        };
+        pic
     }
 }
-/*
-pub struct Camera{
-    orig: Vector3<f64>,
-    size: (u32,u32),
-    dir: Vector3<f64>,
-    up: Vector3<f64>
-
-}
-
-impl Camera{
-    pub fn take_pic(&self, world: &World) -> ImageBuffer<Rgb<u8>,Vec<u8>> {
-        ImageBuffer::new(self.size.0,self.size.1)
-
-    }
-}
-
-pub struct Config{
-    pub orig: Vector3<f64>,
-    pub size: (u32,u32),
-    pub dir: Vector3<f64>,
-    pub up: Vector3<f64>
-
-}
-
-impl Config{
-    pub fn build(&self)->Camera{
-        Camera{orig:self.orig,size:self.size,dir:self.dir,up:self.up}
-
-    }
-
-    pub fn new()->Config{
-        Config{orig:Vector3::repeat(0.0),size:(600,400),dir:Vector3::new(0.0,0.0,1.0),up:Vector3::new(0.0,1.0,0.0)}
-    }
-
-    pub fn s(&mut self, x:(u32,u32)) -> &mut Self{
-        self.size = x;
-        self
-    }
-}*/
