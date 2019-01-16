@@ -36,7 +36,7 @@ impl CameraBuilder {
         CameraBuilder {
             orig: Vector::repeat(0.0),
             size: (600, 400),
-            dir: Vector::z(),
+            dir: -Vector::z(),
             up: Vector::y(),
             horizontal_angle: 65,
         }
@@ -53,11 +53,12 @@ impl CameraBuilder {
             let right = dir.cross(&self.up).normalize();
             let down = dir.cross(&right).normalize();
 
+
             let w  = half_angle.tan()* 2.0;
             let h = w * ratio;
             let width_vector = w * right;
             let height_vector = h * down;
-            let upper_left = orig + dir - down / 2.0 - right / 2.0;
+            let upper_left = orig + dir - width_vector / 2.0 - height_vector / 2.0;
             let dx = width_vector / width as f64;
             let dy = height_vector / height as f64;
             (upper_left, dx, dy)
@@ -78,7 +79,6 @@ impl CameraBuilder {
 
 impl Camera{
     pub fn take_pic(&self, world: &World) -> ImageBuffer<Color,Vec<u8>> {
-
         let mut pic = ImageBuffer::new(self.width,self.height);
 
         for (x,y,p) in pic.enumerate_pixels_mut(){
