@@ -20,7 +20,7 @@ pub struct WorldBuilder {
 
 impl WorldBuilder{
     pub fn new() -> WorldBuilder{
-        WorldBuilder{entities:Vec::new(),bg_color:Color{data:[0,0,0]}}
+        WorldBuilder{entities:Vec::new(),bg_color:Color{r:0.0,g:0.0,b:0.0}}
     }
 
     pub fn build(self) -> World {

@@ -78,13 +78,13 @@ impl CameraBuilder {
 
 
 impl Camera{
-    pub fn take_pic(&self, world: &World) -> ImageBuffer<Color,Vec<u8>> {
+    pub fn take_pic(&self, world: &World) -> ImageBuffer<PixelColor,Vec<u8>> {
         let mut pic = ImageBuffer::new(self.width,self.height);
 
         for (x,y,p) in pic.enumerate_pixels_mut(){
 
             let c = world.shoot_ray(&Ray::look_at(self.orig,self.upper_left + self.dx * x as f64 + self.dy * y as f64));
-            *p=c;
+            *p=c.to_pixel();
         };
         pic
     }
