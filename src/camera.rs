@@ -42,6 +42,10 @@ impl CameraBuilder {
         }
     }
 
+    pub fn look_at(&mut self, at:Vector){
+        self.dir = at-self.orig;
+    }
+
     pub fn build(&self) -> Camera {
         let orig =self.orig;
         let width= self.size.0;
@@ -83,7 +87,7 @@ impl Camera{
 
         for (x,y,p) in pic.enumerate_pixels_mut(){
 
-            let c = world.shoot_ray(&Ray::look_at(self.orig,self.upper_left + self.dx * x as f64 + self.dy * y as f64));
+            let c = world.shoot_ray(&Ray::look_at(self.orig,self.upper_left + self.dx * (x as f64+0.5) + self.dy * (y as f64+0.5)));
             *p=c.to_pixel();
         };
         pic
