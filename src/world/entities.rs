@@ -5,14 +5,14 @@ use nalgebra::Matrix3;
 pub trait Entity{
     fn hit(&self, ray: &Ray) -> Option<Hit>;
 }
-/*pub struct TestBall {
+pub struct TestBall {
     pub c: Color,
     pub r: f64,
     pub o: Vector
 }
 
 impl Entity for TestBall{
-    fn hit(&self, ray: &Ray) -> Option<(f64,Color)> {
+    fn hit(&self, ray: &Ray) -> Option<(Hit)> {
         let a = ray.orig - self.o;
         let b = 2.0*ray.dir.dot(&a);
         let d = b.powi(2) - 4.0 * (a.dot(&a)-self.r.powi(2)) ;
@@ -20,13 +20,17 @@ impl Entity for TestBall{
             let d_sqrt = d.sqrt();
             let t = 0.0_f64.max((-b +d_sqrt)*0.5).min(0.0_f64.max((-b -d_sqrt)*0.5));
             if t>0.0{
-                return Some((t ,self.c));
+                let n = (ray.orig+ray.dir*t-self.o).normalize();
+                let angle = -n.dot(&ray.dir);
+                if angle >0.0 {
+                    return Some(Hit{t,n,c:self.c* angle});
+                }
             }
         }
         None
 
     }
-}*/
+}
 // ********************************************************
 
 pub struct TriangleBuilder{
