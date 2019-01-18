@@ -10,11 +10,11 @@ fn main() {
     //test();
     let t =rt::read_obj_file("cornell.obj").unwrap();
     println!("file read.");
-    let mut camConf = rt::CameraBuilder::new();
-    camConf.orig = rt::Vector::new(0.0,0.0,-3.0);
-    camConf.look_at(rt::Vector::new(0.0,0.0,0.0));
-    //camConf.size=(100,100);
-    let cam =  camConf.build();
+    let mut cam_conf = rt::CameraBuilder::new();
+    cam_conf.orig = rt::Vector::new(0.0,0.0,-3.0);
+    cam_conf.look_at(rt::Vector::new(0.0,0.0,0.0));
+    //cam_conf.size=(100,100);
+    let cam =  cam_conf.build();
     println!("Camera created.");
     let mut wb = rt::WorldBuilder::new();
     /*let ball = rt::Ball{c:rt::Color{r:1.0, g:0.0,b:0.0},r:2.0, o: rt::Vector::new(1.0, 0.0, -7.0)};
