@@ -1,5 +1,5 @@
-use crate::world::entities::Triangle as Tr;
 use crate::world::entities::TriangleBuilder as TrB;
+use crate::world::entities::Entity;
 use crate::types::Color;
 
 use std::io::BufReader;
@@ -7,12 +7,12 @@ use std::io::BufRead;
 use std::fs::File;
 use std::error::Error;
 
-pub fn read_obj_file(file_name: &str)->Result<(Vec<Tr>),Box<dyn Error>>{
+pub fn read_obj_file(file_name: &str)->Result< Vec<Box<Entity>>,Box<dyn Error>>{
     let f = File::open(file_name)?;
     let reader = BufReader::new(f);
     let mut vertices :Vec<[f64;3]> = Vec::new();
     let mut normals :Vec<[f64;3]> = Vec::new();
-    let mut faces: Vec<Tr> = Vec::new();
+    let mut faces: Vec<Box<Entity>> = Vec::new();
 
     let mut cur_color: Color = Color{r:0.3,g:0.3,b:0.3};
 
@@ -28,7 +28,7 @@ pub fn read_obj_file(file_name: &str)->Result<(Vec<Tr>),Box<dyn Error>>{
                     let [idv,_,idn] = parse_face(tokens[i]);
                     b.add(vertices[idv],normals[idn]);
                 }
-                faces.push(b.build())
+                faces.push(Box::new(b.build()));
             },
             "usemtl" => {let t = tokens[1].parse::<u8>().unwrap(); cur_color.set(t);}
             _ => continue

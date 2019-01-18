@@ -7,19 +7,27 @@ use self::entities::Entity;
 
 
 pub struct World{
-    entities: Vec<Box<dyn Entity>>,
+    entities: Vec<Box<Entity>>,
     bg_color: Color
 }
 
 pub struct WorldBuilder {
-    pub entities: Vec<Box<dyn Entity>>,
+    entities: Vec<Box< Entity>>,
     pub bg_color: Color
 
 }
 
 impl WorldBuilder{
+    pub fn from_entities(entities:Vec<Box<Entity>>) -> WorldBuilder{
+        WorldBuilder{entities, bg_color: Color::gray(0.0)}
+    }
+
     pub fn new() -> WorldBuilder{
-        WorldBuilder{entities:Vec::new(),bg_color:Color{r:0.0,g:0.0,b:0.0}}
+        WorldBuilder{entities:Vec::new(),bg_color:Color::gray(0.0)}
+    }
+
+    pub fn add_entity<T: Entity+ 'static >(&mut self, entity:T){
+        self.entities.push(Box::new(entity));
     }
 
     pub fn build(self) -> World {
