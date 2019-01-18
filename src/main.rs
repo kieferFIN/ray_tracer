@@ -9,11 +9,13 @@ use nalgebra::Vector3 as V3;
 fn main() {
     //test();
     let t =rt::read_obj_file("cornell.obj").unwrap();
+    println!("file read.");
     let mut camConf = rt::CameraBuilder::new();
-    camConf.orig = rt::Vector::new(-2.5,2.5,5.0);
+    camConf.orig = rt::Vector::new(0.0,0.0,-3.0);
     camConf.look_at(rt::Vector::new(0.0,0.0,0.0));
     //camConf.size=(100,100);
     let cam =  camConf.build();
+    println!("Camera created.");
     let mut wb = rt::WorldBuilder::new();
     /*let ball = rt::Ball{c:rt::Color{r:1.0, g:0.0,b:0.0},r:2.0, o: rt::Vector::new(1.0, 0.0, -7.0)};
     let ball2 = rt::Ball{c:rt::Color{r:0.0,b:1.0,g:0.0},r:2.0, o: rt::Vector::new(-0.5, 0.0, -8.0)};
@@ -23,7 +25,9 @@ fn main() {
         wb.entities.push(Box::new(tri));
     }
     let world = wb.build();
+    println!("World created");
     let p = cam.take_pic(&world);
+    println!("Picture taken.");
     p.save("test.png").unwrap();
     println!("Finish");
 }

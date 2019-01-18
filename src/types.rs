@@ -1,7 +1,8 @@
-
+use std::ops::Mul;
 
 pub type Vector = nalgebra::Vector3<f64>;
 pub type PixelColor = image::Rgb<u8>;
+
 
 #[derive(Copy,Clone)]
 pub struct Color{
@@ -31,3 +32,35 @@ impl Color {
     }
 }
 
+impl Mul<f64> for Color{
+    type Output = Color;
+
+    fn mul(self, rhs: f64) -> Self {
+        Color{r:self.r*rhs,g:self.g*rhs,b:self.b*rhs}
+    }
+}
+// ********************************************************
+
+pub struct Ray{
+    pub orig: Vector,
+    pub dir: Vector,
+}
+
+impl Ray{
+    pub fn new(orig: Vector, dir: Vector) ->Ray{
+
+        Ray{orig, dir: dir.normalize()}
+    }
+
+    pub fn look_at(orig: Vector, dest: Vector) -> Ray{
+        Ray::new(orig, dest-orig)
+    }
+}
+
+// ********************************************************
+
+pub struct Hit{
+    pub t: f64,
+    pub n: Vector,
+    pub c: Color
+}

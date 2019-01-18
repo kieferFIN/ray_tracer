@@ -1,11 +1,11 @@
+use crate::world::entities::Triangle as Tr;
+use crate::world::entities::TriangleBuilder as TrB;
+use crate::types::Color;
+
 use std::io::BufReader;
 use std::io::BufRead;
 use std::fs::File;
 use std::error::Error;
-
-use crate::Triangle as Tr;
-use crate::TriangleBuilder as TrB;
-use crate::types::Color;
 
 pub fn read_obj_file(file_name: &str)->Result<(Vec<Tr>),Box<dyn Error>>{
     let f = File::open(file_name)?;

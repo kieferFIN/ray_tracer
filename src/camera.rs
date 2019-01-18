@@ -1,19 +1,9 @@
-
+use crate::world::World;
 use crate::types::*;
 
 use image::ImageBuffer;
-use crate::world::World;
-use crate::utils::Ray;
 
-/*
-builder!(CamBuilder => Camera{
-    orig: Vector= Vector::repeat(0.0),
-    size: (u32,u32) = (600,400),
-    dir: Vector = Vector::z(),
-    up: Vector= Vector::y(),
-    horizontal_angle: u32 = 65
-});
-*/
+
 pub struct Camera {
     orig: Vector,
     width: u32,
@@ -35,7 +25,7 @@ impl CameraBuilder {
     pub fn new() -> CameraBuilder {
         CameraBuilder {
             orig: Vector::repeat(0.0),
-            size: (600, 400),
+            size: (800, 600),
             dir: -Vector::z(),
             up: Vector::y(),
             horizontal_angle: 65,
