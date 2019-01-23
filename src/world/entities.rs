@@ -21,9 +21,8 @@ impl Entity for TestBall{
             let t = 0.0_f64.max((-b +d_sqrt)*0.5).min(0.0_f64.max((-b -d_sqrt)*0.5));
             if t>0.0{
                 let n = (ray.orig+ray.dir*t-self.o).normalize();
-                let angle = -n.dot(&ray.dir);
-                if angle >0.0 {
-                    return Some(Hit{t,n,c:self.c* angle});
+                if -n.dot(&ray.dir) >0.0 {
+                    return Some(Hit{t,n,c:self.c});
                 }
             }
         }
@@ -80,9 +79,8 @@ impl Entity for Triangle{
         //println!("{} {}", x.x, x.y);
         if beta >= 0.0 && gamma >= 0.0 && beta + gamma <1.0 {
             let n = self.normals[0] * alpha + self.normals[1] * beta + self.normals[2] * gamma;
-            let angle = -n.dot(&ray.dir);
-            if angle >0.0 {
-                return Some(Hit{t,n,c:self.color * angle});
+            if -n.dot(&ray.dir)  >0.0 {
+                return Some(Hit{t,n,c:self.color});
             }
         }
 

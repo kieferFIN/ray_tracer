@@ -6,14 +6,10 @@ use std::f64;
 use self::entities::Entity;
 
 
-pub struct World{
-    entities: Vec<Box<Entity>>,
-    bg_color: Color
-}
-
 pub struct WorldBuilder {
     entities: Vec<Box< Entity>>,
     pub bg_color: Color
+
 
 }
 
@@ -35,27 +31,48 @@ impl WorldBuilder{
     }
 
 }
+//****************************************************
 
-
+pub struct World{
+    entities: Vec<Box<Entity>>,
+    bg_color: Color
+}
 
 impl World{
 
     pub fn shoot_ray(&self, ray: &Ray) -> Color{
         let mut t = f64::INFINITY;
-        let mut c: Option<Color> =None;
+        let mut h: Option<Hit> =None;
         for e in &self.entities{
-            match  e.as_ref().hit(ray){
+            /*match  e.as_ref().hit(ray){
                 Some(hit) => {
-                    if hit.t < t {t=hit.t;c=Some(hit.c);}
+                    if hit.t < t {
+                        t=hit.t; h = Some(hit);
+                    }
                 }
+
                 _ => ()
+            }*/
+            if let Some(hit) = e.as_ref().hit(ray){
+                if hit.t < t {
+                    t=hit.t;
+                    h=Some(hit);
+                }
             }
 
         }
-        c.unwrap_or(self.bg_color)
+        match h {
+            Some(h) => h.c * -ray.dir.dot(&h.n),
+            _ => self.bg_color
+        }
+
 
     }
 }
+//****************************************************
 
+pub struct Light{
+
+}
 
 

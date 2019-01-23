@@ -25,7 +25,7 @@ impl CameraBuilder {
     pub fn new() -> CameraBuilder {
         CameraBuilder {
             orig: Vector::repeat(0.0),
-            size: (800, 600),
+            size: (400, 300),
             dir: -Vector::z(),
             up: Vector::y(),
             horizontal_angle: 65,
