@@ -13,7 +13,7 @@ pub struct Color{
 
 impl Color {
     pub fn to_pixel(&self) -> PixelColor{
-        PixelColor{data:[(self.r * 255.0) as u8,(self.g * 255.0) as u8,(self.b * 255.0) as u8]}
+        PixelColor{data:[(self.r.max(0.0).min(1.0) * 255.0) as u8,(self.g.max(0.0).min(1.0) * 255.0) as u8,(self.b.max(0.0).min(1.0) * 255.0) as u8]}
     }
 
     pub fn set(&mut self, i:u8){
@@ -26,8 +26,12 @@ impl Color {
         }
     }
 
+    pub fn black() -> Color{
+        Color{r:0.0,g:0.0,b:0.0}
+    }
+
     pub fn gray(c:f64) ->Color{
-        let c = c/4.0;
+        //let c = c/4.0;
         Color{r:c,g:c,b:c}
     }
 }
