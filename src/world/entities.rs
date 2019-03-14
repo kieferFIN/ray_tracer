@@ -2,7 +2,7 @@ use crate::types::*;
 
 use nalgebra::Matrix3;
 
-pub trait Entity{
+/*pub trait Entity{
     fn hit(&self, ray: &Ray) -> Option<Hit>;
 }
 pub struct TestBall {
@@ -28,7 +28,7 @@ impl Entity for TestBall{
         None
 
     }
-}
+}*/
 // ********************************************************
 
 pub struct TriangleBuilder{
@@ -65,8 +65,8 @@ pub struct Triangle{
 
 }
 
-impl Entity for Triangle{
-    fn hit(&self, ray: &Ray) -> Option<Hit> {
+impl Triangle{
+    pub fn hit(&self, ray: &Ray) -> Option<Hit> {
         let m = Matrix3::from_columns(&[self.a_b, self.a_c, ray.dir]);
         let decomp = m.lu();
         let b = self.vertices[0]-ray.orig;

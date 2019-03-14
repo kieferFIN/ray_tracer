@@ -8,7 +8,7 @@ pub use self::types::*;
 pub use self::world::WorldBuilder;
 pub use self::camera::CameraBuilder;
 pub use self::io::read_obj_file;
-pub use self::world::entities::TestBall;
+//pub use self::world::entities::TestBall;
 
 use std::time::Instant;
 

@@ -12,18 +12,12 @@ pub struct Color{
 }
 
 impl Color {
+
+    pub fn new (r:f64, g:f64, b:f64) -> Color{
+        Color{r,g,b}
+    }
     pub fn to_pixel(&self) -> PixelColor{
         PixelColor{data:[(self.r.max(0.0).min(1.0) * 255.0) as u8,(self.g.max(0.0).min(1.0) * 255.0) as u8,(self.b.max(0.0).min(1.0) * 255.0) as u8]}
-    }
-
-    pub fn set(&mut self, i:u8){
-        self.r = 0.8;self.g = 0.8;self.b = 0.0;
-        match i%3 {
-            0 => self.b =0.8,
-            1 => self.r=0.0,
-            2 => self.g = 0.0,
-            _ => ()
-        }
     }
 
     pub fn black() -> Color{
@@ -41,6 +35,14 @@ impl Mul<f64> for Color{
 
     fn mul(self, rhs: f64) -> Self {
         Color{r:self.r*rhs,g:self.g*rhs,b:self.b*rhs}
+    }
+}
+
+impl Mul<Color> for Color{
+    type Output = Color;
+
+    fn mul(self, rhs: Color) -> Self {
+        Color{r:self.r*rhs.r,g:self.g*rhs.g,b:self.b*rhs.b}
     }
 }
 // ********************************************************

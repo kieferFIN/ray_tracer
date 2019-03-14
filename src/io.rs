@@ -1,5 +1,5 @@
 use crate::world::entities::TriangleBuilder as TrB;
-use crate::world::entities::Entity;
+use crate::world::entities::Triangle;
 use crate::types::Color;
 
 use std::io::BufReader;
@@ -8,12 +8,12 @@ use std::fs::File;
 use std::error::Error;
 use std::collections::HashMap;
 
-pub fn read_obj_file(file_name: &str) -> Result<Vec<Box<Entity>>, Box<dyn Error>> {
+pub fn read_obj_file(file_name: &str) -> Result<Vec<Triangle>, Box<dyn Error>> {
     let f = File::open(file_name)?;
     let reader = BufReader::new(f);
     let mut vertices: Vec<[f64; 3]> = Vec::new();
     let mut normals: Vec<[f64; 3]> = Vec::new();
-    let mut faces: Vec<Box<Entity>> = Vec::new();
+    let mut faces: Vec<Triangle> = Vec::new();
 
     let mut cur_color: Color = Color { r: 0.3, g: 0.3, b: 0.3 };
     let mut materials = HashMap::new();
@@ -31,11 +31,11 @@ pub fn read_obj_file(file_name: &str) -> Result<Vec<Box<Entity>>, Box<dyn Error>
                     let [idv, _, idn] = parse_face(tokens[i]);
                     b.add(vertices[idv], normals[idn]);
                 }
-                faces.push(Box::new(b.build()));
+                faces.push(b.build());
             }
             "usemtl" => {
-                let t = tokens[1].parse::<u8>().unwrap();
-                cur_color.set(t);
+                let material_name = tokens[1];
+                cur_color = *materials.get(material_name).unwrap();
             }
             "mtllib" => parse_mtl_file(tokens[1],&mut materials),
             _ => continue
