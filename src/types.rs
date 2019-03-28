@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Mul, MulAssign};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Div};
 
 pub type Vector = nalgebra::Vector3<f64>;
 pub type PixelColor = image::Rgb<u8>;
@@ -38,17 +38,25 @@ impl Mul<f64> for Color{
     }
 }
 
+impl Div<f64> for Color{
+    type Output = Color;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        Color{r:self.r/rhs, g:self.g/rhs, b:self.b/rhs}
+    }
+}
+
 impl Mul<Color> for Color{
     type Output = Color;
 
-    fn mul(self, rhs: Color) -> Self {
+    fn mul(self, rhs: Color) -> Self::Output {
         Color{r:self.r*rhs.r,g:self.g*rhs.g,b:self.b*rhs.b}
     }
 }
 
 impl Add<Color> for Color{
     type Output = Color;
-    fn add(self, rhs: Color) -> Self {
+    fn add(self, rhs: Color) -> Self::Output {
         Color{r:self.r+rhs.r,g:self.g+rhs.g,b:self.b+rhs.b}
     }
 }

@@ -79,23 +79,6 @@ impl World{
 
         }
         colors
-        /*for e in &self.triangles {
-            if let Some(hit) = e.hit(ray){
-                if hit.t < t && -hit.n.dot(&ray.dir) > 0.0{
-                    t=hit.t;
-                    h=Some(hit);
-                }
-            }
-
-        }
-        if let Some(hit) = h{
-            //let ambient = Vector::new(0.4,0.4,-0.7).normalize();
-            hit.c * self.get_radiance_from_light(&(ray.orig+ray.dir*(hit.t-epsilon)), &hit.n)
-            //hit.c * (hit.n.dot(&-ambient).max(0.0)+self.get_radiance_from_light(&(ray.orig+ray.dir*(hit.t-epsilon)), &hit.n))
-            //hit.c* (-hit.n.dot(&ray.dir)).max(0.0)
-        }else{
-            self.bg_color
-        }*/
     }
 
 

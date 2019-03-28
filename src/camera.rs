@@ -9,6 +9,10 @@ use std::thread;
 use std::sync::mpsc;
 use std::sync::Arc;
 
+use rand::rngs::SmallRng;
+use rand::FromEntropy;
+use rand::Rng;
+
 
 pub struct Camera {
     orig: Vector,
@@ -20,6 +24,8 @@ pub struct Camera {
     threads: u32,
     pic_width: u32,
     pic_height: u32,
+    steps: u32,
+    rays_per_pixel: u32,
 }
 
 pub struct CameraBuilder {
@@ -28,7 +34,10 @@ pub struct CameraBuilder {
     pub   dir: Vector,
     pub   up: Vector,
     pub   horizontal_angle: u32,
-    pub   super_sampling_factor:u32
+    pub   super_sampling_factor:u32,
+    pub   rays_per_pixel:u32,
+    pub   steps:u32,
+    pub   threads:u32
 
 }
 
@@ -40,7 +49,10 @@ impl CameraBuilder {
             dir: -Vector::z(),
             up: Vector::y(),
             horizontal_angle: 65,
-            super_sampling_factor: 2
+            super_sampling_factor: 2,
+            rays_per_pixel:5,
+            steps: 3,
+            threads: 4
         }
     }
 
@@ -70,6 +82,7 @@ impl CameraBuilder {
             (upper_left, dx, dy)
         };
 
+
         Camera {
             orig,
             width,
@@ -77,9 +90,11 @@ impl CameraBuilder {
             upper_left,
             dy,
             dx,
-            threads: 8,
+            threads: self.threads,
             pic_width: self.size.0,
-            pic_height: self.size.1
+            pic_height: self.size.1,
+            rays_per_pixel: self.rays_per_pixel,
+            steps: self.steps
 
         }
     }
@@ -106,17 +121,31 @@ impl Camera{
             let dy = self.dy;
             let orig = self.orig;
             let w = Arc::clone(world);
+            let steps = self.steps;
+            let rpp = self.rays_per_pixel;
 
             let t = thread::spawn( move || {
+                let mut rng = SmallRng::from_entropy();
                 //println!("{} {} start",x0, y0);
                 for y in 0..height_per_thread{
                     for x in 0..width_per_thread{
-                        let c = w.shoot_ray(Ray::look_at(orig,upper_left + dx * (x as f64+0.5) + dy * (y as f64+0.5)),3);
-                        /*if c.len()>=3{
-                            s.send((x+x0, y+y0, c[2])).unwrap();
-                        } else { s.send((x+x0, y+y0, Color::black())).unwrap(); }*/
-                        s.send((x+x0, y+y0, c.iter().fold(Color::black(), |a, b| a+*b ))).unwrap();
-                        //s.send((x+x0, y+y0, c)).unwrap();
+                        let mut sum=Color::black();
+                        let mut weight_sum = 0.0;
+                        for _ in 0..rpp{
+                            let x_off=rng.gen::<f64>();
+                            let y_off = rng.gen::<f64>();
+                            let weight = (x_off-0.5).powi(2)+ (y_off-0.5).powi(2);
+                            let c = w.shoot_ray(Ray::look_at(orig,upper_left + dx * (x as f64+x_off) + dy * (y as f64+y_off)),steps);
+                            sum += c.iter().fold(Color::black(), |a, b| a+*b ) * weight;
+                            weight_sum += weight;
+                            /*if c.len()>=3{
+                                s.send((x+x0, y+y0, c[2])).unwrap();
+                            } else { s.send((x+x0, y+y0, Color::black())).unwrap(); }*/
+                            //s.send((x+x0, y+y0, c.iter().fold(Color::black(), |a, b| a+*b ))).unwrap();
+                            //s.send((x+x0, y+y0, c)).unwrap();
+                        }
+                        s.send((x+x0, y+y0, sum/weight_sum)).unwrap();
+
                     }
 
                 }
