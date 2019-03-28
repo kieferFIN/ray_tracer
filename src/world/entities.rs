@@ -77,7 +77,7 @@ impl Triangle{
         let alpha = 1.0 - beta - gamma;
         //println!("{} {}", x.x, x.y);
         if beta >= 0.0 && gamma >= 0.0 && beta + gamma <1.0 {
-            let n = self.normals[0] * alpha + self.normals[1] * beta + self.normals[2] * gamma;
+            let n = (self.normals[0] * alpha + self.normals[1] * beta + self.normals[2] * gamma).normalize();
             if -n.dot(&ray.dir)  >0.0 && t > 0.0{
                 return Some(Hit{t,n,c:self.color});
             }

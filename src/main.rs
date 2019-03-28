@@ -15,8 +15,9 @@ fn main() {
     timer.add();
     let mut cam_conf = rt::CameraBuilder::new();
     cam_conf.orig = rt::Vector::new(0.0,0.0,-3.0);
-    cam_conf.look_at(rt::Vector::new(0.0,0.0,0.0));
-    cam_conf.size=(800,600);
+    cam_conf.look_at(rt::Vector::new(0.0,0.1,0.0));
+    cam_conf.size=(400,300);
+    cam_conf.super_sampling_factor=2;
     let cam =  cam_conf.build();
     timer.add();
     let p = cam.take_pic(&world);

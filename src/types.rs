@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Add, AddAssign, Mul, MulAssign};
 
 pub type Vector = nalgebra::Vector3<f64>;
 pub type PixelColor = image::Rgb<u8>;
@@ -45,6 +45,29 @@ impl Mul<Color> for Color{
         Color{r:self.r*rhs.r,g:self.g*rhs.g,b:self.b*rhs.b}
     }
 }
+
+impl Add<Color> for Color{
+    type Output = Color;
+    fn add(self, rhs: Color) -> Self {
+        Color{r:self.r+rhs.r,g:self.g+rhs.g,b:self.b+rhs.b}
+    }
+}
+
+impl MulAssign<Color> for Color{
+    fn mul_assign(&mut self, rhs: Color){
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+    }
+}
+
+impl AddAssign<Color> for Color{
+    fn add_assign(&mut self, rhs: Color){
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+    }
+}
 // ********************************************************
 
 pub struct Ray{
@@ -55,7 +78,7 @@ pub struct Ray{
 impl Ray{
     pub fn new(orig: Vector, dir: Vector) ->Ray{
 
-        Ray{orig, dir: dir.normalize()}
+        Ray{orig, dir}
     }
 
     pub fn look_at(orig: Vector, dest: Vector) -> Ray{

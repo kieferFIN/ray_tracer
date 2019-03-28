@@ -2,6 +2,8 @@ use crate::world::World;
 use crate::types::*;
 
 use image::ImageBuffer;
+use image::imageops::resize;
+use image::FilterType;
 
 use std::thread;
 use std::sync::mpsc;
@@ -16,6 +18,8 @@ pub struct Camera {
     dy: Vector,
     dx: Vector,
     threads: u32,
+    pic_width: u32,
+    pic_height: u32,
 }
 
 pub struct CameraBuilder {
@@ -24,6 +28,7 @@ pub struct CameraBuilder {
     pub   dir: Vector,
     pub   up: Vector,
     pub   horizontal_angle: u32,
+    pub   super_sampling_factor:u32
 
 }
 
@@ -35,6 +40,7 @@ impl CameraBuilder {
             dir: -Vector::z(),
             up: Vector::y(),
             horizontal_angle: 65,
+            super_sampling_factor: 2
         }
     }
 
@@ -44,8 +50,8 @@ impl CameraBuilder {
 
     pub fn build(&self) -> Camera {
         let orig =self.orig;
-        let width= self.size.0;
-        let height= self.size.1;
+        let width= self.size.0*self.super_sampling_factor;
+        let height= self.size.1*self.super_sampling_factor;
         let (upper_left, dx, dy) = {
             let ratio = height as f64 / width as f64;
             let half_angle = (self.horizontal_angle as f64 *0.5).to_radians();
@@ -71,7 +77,9 @@ impl CameraBuilder {
             upper_left,
             dy,
             dx,
-            threads: 8
+            threads: 8,
+            pic_width: self.size.0,
+            pic_height: self.size.1
 
         }
     }
@@ -103,8 +111,12 @@ impl Camera{
                 //println!("{} {} start",x0, y0);
                 for y in 0..height_per_thread{
                     for x in 0..width_per_thread{
-                        let c = w.shoot_ray(&Ray::look_at(orig,upper_left + dx * (x as f64+0.5) + dy * (y as f64+0.5)));
-                        s.send((x+x0, y+y0, c)).unwrap();
+                        let c = w.shoot_ray(Ray::look_at(orig,upper_left + dx * (x as f64+0.5) + dy * (y as f64+0.5)),3);
+                        /*if c.len()>=3{
+                            s.send((x+x0, y+y0, c[2])).unwrap();
+                        } else { s.send((x+x0, y+y0, Color::black())).unwrap(); }*/
+                        s.send((x+x0, y+y0, c.iter().fold(Color::black(), |a, b| a+*b ))).unwrap();
+                        //s.send((x+x0, y+y0, c)).unwrap();
                     }
 
                 }
@@ -122,15 +134,6 @@ impl Camera{
             t.join().unwrap();
         };
 
-        /*for (x,y,p) in pic.enumerate_pixels_mut(){
-
-            let c = world.shoot_ray(&Ray::look_at(self.orig,self.upper_left + self.dx * (x as f64+0.5) + self.dy * (y as f64+0.5)));
-            *p=c.to_pixel();
-        };*/
-        /*let mut sub_pic = pic.sub_image(100,50,200,200);
-        for (_,_,p) in sub_pic.pixels_mut(){
-            *p = Color::gray(0.5).to_pixel();
-        }*/
-        pic
+        resize(&pic,self.pic_width, self.pic_height, FilterType::Gaussian)
     }
 }

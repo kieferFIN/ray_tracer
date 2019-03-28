@@ -12,7 +12,6 @@ use std::sync::Arc;
 
 pub struct WorldBuilder {
     entities: Vec<Triangle>,
-    pub bg_color: Color,
     pub light: Light
 
 
@@ -20,11 +19,11 @@ pub struct WorldBuilder {
 
 impl WorldBuilder{
     pub fn from_triangles(entities:Vec<Triangle>) -> WorldBuilder{
-        WorldBuilder{entities, bg_color: Color::gray(0.0), light: Light::default()}
+        WorldBuilder{entities,  light: Light::default()}
     }
 
     pub fn new() -> WorldBuilder{
-        WorldBuilder{entities:Vec::new(),bg_color:Color::gray(0.0), light:Light::default()}
+        WorldBuilder{entities:Vec::new(), light:Light::default()}
     }
 
     pub fn add_triangle(&mut self, t:Triangle){
@@ -32,7 +31,7 @@ impl WorldBuilder{
     }
 
     pub fn build(self) -> Arc<World> {
-        let w = World{ triangles: self.entities, bg_color: self.bg_color, light: self.light};
+        let w = World{ triangles: self.entities, light: self.light};
         Arc::new(w)
     }
 
@@ -41,17 +40,46 @@ impl WorldBuilder{
 
 pub struct World{
     triangles: Vec<Triangle>,
-    bg_color: Color,
     light: Light,
 }
 
 impl World{
 
-    pub fn shoot_ray(&self, ray: &Ray) -> Color{
+    pub fn shoot_ray(&self, mut ray: Ray, steps:u32) -> Vec<Color>{
         let epsilon = 0.01;
-        let mut t = f64::INFINITY;
-        let mut h: Option<Hit> =None;
-        for e in &self.triangles {
+        let mut colors = Vec::new();
+        let mut c =Color::gray(1.0);
+
+        for _ in 0..steps {
+            let mut t = f64::INFINITY;
+            let mut h: Option<Hit> =None;
+            for e in &self.triangles {
+                if let Some(hit) = e.hit(&ray){
+                    if hit.t < t && -hit.n.dot(&ray.dir) > 0.0{
+                        t=hit.t;
+                        h=Some(hit);
+                    }
+                }
+
+            }
+            if let Some(hit) = h{
+                c *= hit.c;
+                let point = ray.orig+ray.dir*(hit.t-epsilon);
+                //let ambient = Vector::new(0.4,0.4,-0.7).normalize();
+                colors.push( c * self.get_radiance_from_light(&point, &hit.n));
+                //hit.c * (hit.n.dot(&-ambient).max(0.0)+self.get_radiance_from_light(&(ray.orig+ray.dir*(hit.t-epsilon)), &hit.n))
+                //hit.c* (-hit.n.dot(&ray.dir)).max(0.0)
+                let dir = random_dir_in_hemisphere(&hit.n);
+                ray = Ray::new(point,dir);
+            }else{
+                break
+            }
+
+
+
+        }
+        colors
+        /*for e in &self.triangles {
             if let Some(hit) = e.hit(ray){
                 if hit.t < t && -hit.n.dot(&ray.dir) > 0.0{
                     t=hit.t;
@@ -67,8 +95,10 @@ impl World{
             //hit.c* (-hit.n.dot(&ray.dir)).max(0.0)
         }else{
             self.bg_color
-        }
+        }*/
     }
+
+
 
     fn get_radiance_from_light(&self, p: &Vector, n:&Vector)-> Color{
 
@@ -76,19 +106,17 @@ impl World{
         let mut est:f64 = 0.0;
         for s in samples_from_light.iter(){
             let dir = p-s;
-            let ray =Ray{orig:*s, dir};
+            let ray =Ray::new(*s, dir);
             let dir = dir.normalize();
-            if self.is_light_visible(&ray){
-                 est += self.light.n.dot(&dir)*-n.dot(&dir)/ dir.norm_squared();
+            if self.is_not_something_blocking(&ray){
+                 est += self.light.n.dot(&dir).abs()*-n.dot(&dir)/ dir.norm_squared();
             }
         }
         self.light.I*(est*self.light.A/(PI)).max(0.0)
     }
 
-    fn is_light_visible(&self, ray:&Ray) ->bool{
-        if ray.dir.dot(&self.light.n)< 0.0{
-            return false;
-        }
+
+    fn is_not_something_blocking(&self, ray:&Ray) ->bool{
         for e in &self.triangles {
             if let Some(hit) = e.hit(&ray){
                 if hit.t < 1.0 {
@@ -98,6 +126,27 @@ impl World{
         }
         true
     }
+}
+
+fn random_dir_in_hemisphere(n: &Vector) -> Vector{
+    let a = if n.y.powi(2)+n.x.powi(2) > 0.1{
+        Vector::new(n.y,-n.x, 0.0).normalize()
+    }else {
+        Vector::new(n.z,0.0,-n.x).normalize()
+    };
+
+    let mut rng = SmallRng::from_entropy();
+    let r = rng.gen::<f64>();
+    let angle = rng.gen::<f64>()*2.0*PI;
+    let (sin, cos) = angle.sin_cos();
+    let x = cos * r;
+    let y = sin * r;
+    let z = r.hypot(1.0);
+
+    let b = a.cross(n);
+
+    x*a+y*b+z*n
+
 }
 //****************************************************
 
