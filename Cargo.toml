@@ -1,10 +1,10 @@
 [package]
 name = "ray_tracer"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["kiefer <eero.manty@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-image = "*"
-nalgebra = "0.16"
+image = "0.23"
+nalgebra = "0.29"
 rand ="*"

@@ -2,8 +2,7 @@ use crate::world::World;
 use crate::types::*;
 
 use image::ImageBuffer;
-use image::imageops::resize;
-use image::FilterType;
+use image::imageops::{resize, FilterType};
 
 use std::thread;
 use std::sync::mpsc;
@@ -82,7 +81,6 @@ impl CameraBuilder {
             (upper_left, dx, dy)
         };
 
-
         Camera {
             orig,
             width,
@@ -126,7 +124,6 @@ impl Camera{
 
             let t = thread::spawn( move || {
                 let mut rng = SmallRng::from_entropy();
-                //println!("{} {} start",x0, y0);
                 for y in 0..height_per_thread{
                     for x in 0..width_per_thread{
                         let mut sum=Color::black();
@@ -137,19 +134,13 @@ impl Camera{
                             let weight = (x_off-0.5).powi(2)+ (y_off-0.5).powi(2);
                             let c = w.shoot_ray(Ray::look_at(orig,upper_left + dx * (x as f64+x_off) + dy * (y as f64+y_off)),steps);
                             sum += c.iter().fold(Color::black(), |a, b| a+*b ) * weight;
-                            weight_sum += weight;
-                            /*if c.len()>=3{
-                                s.send((x+x0, y+y0, c[2])).unwrap();
-                            } else { s.send((x+x0, y+y0, Color::black())).unwrap(); }*/
-                            //s.send((x+x0, y+y0, c.iter().fold(Color::black(), |a, b| a+*b ))).unwrap();
-                            //s.send((x+x0, y+y0, c)).unwrap();
+                            weight_sum += weight
                         }
                         s.send((x+x0, y+y0, sum/weight_sum)).unwrap();
 
                     }
 
                 }
-                //println!("{} {} end",x0, y0 );
             });
             thread_container.push(t);
         };
