@@ -1,13 +1,13 @@
 pub mod entities;
 
-use crate::types::*;
 use self::entities::Triangle;
+use crate::types::*;
 
-use std::f64;
-use std::f64::consts::PI;
 use rand::rngs::SmallRng;
 use rand::FromEntropy;
 use rand::Rng;
+use std::f64;
+use std::f64::consts::PI;
 use std::sync::Arc;
 
 pub struct WorldBuilder {
@@ -17,11 +17,17 @@ pub struct WorldBuilder {
 
 impl WorldBuilder {
     pub fn from_triangles(entities: Vec<Triangle>) -> WorldBuilder {
-        WorldBuilder { entities, light: Light::default() }
+        WorldBuilder {
+            entities,
+            light: Light::default(),
+        }
     }
 
     pub fn new() -> WorldBuilder {
-        WorldBuilder { entities: Vec::new(), light: Light::default() }
+        WorldBuilder {
+            entities: Vec::new(),
+            light: Light::default(),
+        }
     }
 
     pub fn add_triangle(&mut self, t: Triangle) {
@@ -29,7 +35,10 @@ impl WorldBuilder {
     }
 
     pub fn build(self) -> Arc<World> {
-        let w = World { triangles: self.entities, light: self.light };
+        let w = World {
+            triangles: self.entities,
+            light: self.light,
+        };
         Arc::new(w)
     }
 }
@@ -47,9 +56,12 @@ impl World {
         let mut c = Color::gray(1.0);
 
         for _ in 0..steps {
-            if let Some(hit) = self.triangles.iter()
+            if let Some(hit) = self
+                .triangles
+                .iter()
                 .filter_map(|t| t.hit(&ray))
-                .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap()) {
+                .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
+            {
                 c *= hit.c;
                 let point = ray.orig + ray.dir * (hit.t - epsilon);
                 colors.push(c * self.get_radiance_from_light(&point, &hit.n));
@@ -61,7 +73,6 @@ impl World {
         }
         colors
     }
-
 
     fn get_radiance_from_light(&self, p: &Vector, n: &Vector) -> Color {
         let samples_from_light = self.light.get_sample_points();
@@ -76,7 +87,6 @@ impl World {
         }
         self.light.I * (est * self.light.A / (PI)).max(0.0)
     }
-
 
     fn is_not_something_blocking(&self, ray: &Ray) -> bool {
         for e in &self.triangles {
@@ -103,7 +113,7 @@ fn random_dir_in_hemisphere(n: &Vector) -> Vector {
     let (sin, cos) = angle.sin_cos();
     let x = cos * r;
     let y = sin * r;
-//    let z = r.hypot(1.0);
+    //    let z = r.hypot(1.0);
     let z = (1.0 - r.powi(2)).sqrt();
 
     let b = a.cross(n);
@@ -124,11 +134,23 @@ pub struct Light {
 impl Light {
     pub fn new(orig: Vector, a: Vector, b: Vector, I: Color) -> Light {
         let cross = a.cross(&b);
-        Light { orig, a, b, n: cross.normalize(), A: cross.norm(), I }
+        Light {
+            orig,
+            a,
+            b,
+            n: cross.normalize(),
+            A: cross.norm(),
+            I,
+        }
     }
 
     pub fn default() -> Light {
-        Light::new(Vector::new(-0.2, 0.9, -0.2), Vector::new(0.4, 0.0, 0.0), Vector::new(0.0, 0.0, 0.4), Color::new(3.0, 2.9, 2.0))
+        Light::new(
+            Vector::new(-0.2, 0.9, -0.2),
+            Vector::new(0.4, 0.0, 0.0),
+            Vector::new(0.0, 0.0, 0.4),
+            Color::new(3.0, 2.9, 2.0),
+        )
     }
 
     pub fn get_sample_points(&self) -> [Vector; 4] {
@@ -137,10 +159,10 @@ impl Light {
             self.orig + self.a * rng.gen::<f64>() * 0.5 + self.b * rng.gen::<f64>() * 0.5,
             self.orig + self.a * (rng.gen::<f64>() * 0.5 + 0.5) + self.b * rng.gen::<f64>() * 0.5,
             self.orig + self.a * rng.gen::<f64>() * 0.5 + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
-            self.orig + self.a * (rng.gen::<f64>() * 0.5 + 0.5) + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
+            self.orig
+                + self.a * (rng.gen::<f64>() * 0.5 + 0.5)
+                + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
         ]
         //[self.orig , self.orig+self.a, self.orig+self.b, self.orig+self.a+self.b]
     }
 }
-
-

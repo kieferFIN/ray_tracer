@@ -1,8 +1,7 @@
-use std::ops::{Add, AddAssign, Mul, MulAssign, Div};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign};
 
 pub type Vector = nalgebra::Vector3<f64>;
 pub type PixelColor = image::Rgb<u8>;
-
 
 #[derive(Copy, Clone)]
 pub struct Color {
@@ -16,7 +15,11 @@ impl Color {
         Color { r, g, b }
     }
     pub fn to_pixel(&self) -> PixelColor {
-        image::Rgb([(self.r.max(0.0).min(1.0) * 255.0) as u8, (self.g.max(0.0).min(1.0) * 255.0) as u8, (self.b.max(0.0).min(1.0) * 255.0) as u8])
+        image::Rgb([
+            (self.r.max(0.0).min(1.0) * 255.0) as u8,
+            (self.g.max(0.0).min(1.0) * 255.0) as u8,
+            (self.b.max(0.0).min(1.0) * 255.0) as u8,
+        ])
     }
 
     pub fn black() -> Color {
@@ -35,7 +38,11 @@ impl Mul<f64> for Color {
     type Output = Color;
 
     fn mul(self, rhs: f64) -> Self {
-        Color { r: self.r * rhs, g: self.g * rhs, b: self.b * rhs }
+        Color {
+            r: self.r * rhs,
+            g: self.g * rhs,
+            b: self.b * rhs,
+        }
     }
 }
 
@@ -43,7 +50,11 @@ impl Div<f64> for Color {
     type Output = Color;
 
     fn div(self, rhs: f64) -> Self::Output {
-        Color { r: self.r / rhs, g: self.g / rhs, b: self.b / rhs }
+        Color {
+            r: self.r / rhs,
+            g: self.g / rhs,
+            b: self.b / rhs,
+        }
     }
 }
 
@@ -51,14 +62,22 @@ impl Mul<Color> for Color {
     type Output = Color;
 
     fn mul(self, rhs: Color) -> Self::Output {
-        Color { r: self.r * rhs.r, g: self.g * rhs.g, b: self.b * rhs.b }
+        Color {
+            r: self.r * rhs.r,
+            g: self.g * rhs.g,
+            b: self.b * rhs.b,
+        }
     }
 }
 
 impl Add<Color> for Color {
     type Output = Color;
     fn add(self, rhs: Color) -> Self::Output {
-        Color { r: self.r + rhs.r, g: self.g + rhs.g, b: self.b + rhs.b }
+        Color {
+            r: self.r + rhs.r,
+            g: self.g + rhs.g,
+            b: self.b + rhs.b,
+        }
     }
 }
 

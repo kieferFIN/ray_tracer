@@ -1,40 +1,34 @@
-
-mod types;
 mod camera;
-mod world;
 mod io;
+mod types;
+mod world;
 
-pub use self::types::*;
-pub use self::world::WorldBuilder;
 pub use self::camera::CameraBuilder;
 pub use self::io::read_obj_file;
+pub use self::types::*;
+pub use self::world::WorldBuilder;
 //pub use self::world::entities::TestBall;
 
 use std::time::Instant;
 
 pub struct Timer {
-    moments: Vec<Instant>
+    moments: Vec<Instant>,
 }
 
-impl Timer{
-    pub fn new() -> Timer{
-        Timer{moments: Vec::new()}
+impl Timer {
+    pub fn new() -> Timer {
+        Timer {
+            moments: Vec::new(),
+        }
     }
 
-
-    pub fn add(&mut self){
-
+    pub fn add(&mut self) {
         self.moments.push(Instant::now());
     }
-    pub fn print(&self){
-        for i in 1 .. self.moments.len() {
-            let dur = self.moments[i].duration_since(self.moments[i-1]);
-            print!("{}:{} ", dur.as_secs(),dur.subsec_millis());
+    pub fn print(&self) {
+        for i in 1..self.moments.len() {
+            let dur = self.moments[i].duration_since(self.moments[i - 1]);
+            print!("{}:{} ", dur.as_secs(), dur.subsec_millis());
         }
     }
 }
-
-
-
-
-

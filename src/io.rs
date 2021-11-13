@@ -1,12 +1,12 @@
-use crate::world::entities::TriangleBuilder as TrB;
-use crate::world::entities::Triangle;
 use crate::types::Color;
+use crate::world::entities::Triangle;
+use crate::world::entities::TriangleBuilder as TrB;
 
-use std::io::BufReader;
-use std::io::BufRead;
-use std::fs::File;
-use std::error::Error;
 use std::collections::HashMap;
+use std::error::Error;
+use std::fs::File;
+use std::io::BufRead;
+use std::io::BufReader;
 
 pub fn read_obj_file(file_name: &str) -> Result<Vec<Triangle>, Box<dyn Error>> {
     let f = File::open(file_name)?;
@@ -15,9 +15,12 @@ pub fn read_obj_file(file_name: &str) -> Result<Vec<Triangle>, Box<dyn Error>> {
     let mut normals: Vec<[f64; 3]> = Vec::new();
     let mut faces: Vec<Triangle> = Vec::new();
 
-    let mut cur_color: Color = Color { r: 0.3, g: 0.3, b: 0.3 };
+    let mut cur_color: Color = Color {
+        r: 0.3,
+        g: 0.3,
+        b: 0.3,
+    };
     let mut materials = HashMap::new();
-
 
     for line_result in reader.lines() {
         let line = line_result.unwrap();
@@ -37,8 +40,8 @@ pub fn read_obj_file(file_name: &str) -> Result<Vec<Triangle>, Box<dyn Error>> {
                 let material_name = tokens[1];
                 cur_color = *materials.get(material_name).unwrap();
             }
-            "mtllib" => parse_mtl_file(tokens[1],&mut materials),
-            _ => continue
+            "mtllib" => parse_mtl_file(tokens[1], &mut materials),
+            _ => continue,
         };
     }
     //println!("{} {}",faces[0].a_b, faces[0].a_c);
@@ -50,7 +53,7 @@ fn parse_face(tokens: &str) -> [usize; 3] {
     [a[0] - 1, a[1] - 1, a[2] - 1]
 }
 
-fn parse_mtl_file(file_name: &str, materials: &mut HashMap<String,Color>) {
+fn parse_mtl_file(file_name: &str, materials: &mut HashMap<String, Color>) {
     if let Ok(f) = File::open(file_name) {
         let reader = BufReader::new(f);
         let mut cur_material_name: Option<String> = None;
@@ -60,15 +63,20 @@ fn parse_mtl_file(file_name: &str, materials: &mut HashMap<String,Color>) {
             let line = line_result.unwrap();
             let tokens: Vec<&str> = line.split(' ').collect();
             match tokens[0] {
-                "newmtl" =>
-                    {
-                        if let Some(name) = cur_material_name {
-                            materials.insert(name, cur_material);
-                        }
-                        cur_material_name = Some(tokens[1].to_string());
+                "newmtl" => {
+                    if let Some(name) = cur_material_name {
+                        materials.insert(name, cur_material);
                     }
-                "Kd" => cur_material = Color { r: tokens[1].parse().unwrap(), g: tokens[2].parse().unwrap(), b: tokens[3].parse().unwrap() },
-                _ => ()
+                    cur_material_name = Some(tokens[1].to_string());
+                }
+                "Kd" => {
+                    cur_material = Color {
+                        r: tokens[1].parse().unwrap(),
+                        g: tokens[2].parse().unwrap(),
+                        b: tokens[3].parse().unwrap(),
+                    }
+                }
+                _ => (),
             }
         }
         if let Some(name) = cur_material_name {
