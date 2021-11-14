@@ -5,7 +5,7 @@ fn main() {
     timer.add();
     let t = rt::read_obj_file("cornell.obj").unwrap();
     timer.add();
-    let wb = rt::WorldBuilder::from_triangles(t);
+    let wb = rt::WorldBuilder::from_entities(t);
     /*let mut wb = rt::WorldBuilder::new();
     let ball = rt::TestBall{c:rt::Color{r:1.0, g:0.0,b:0.0},r:1.2, o: rt::Vector::new(0.5, 0.0, 0.0)};
     let ball2 = rt::TestBall{c:rt::Color{r:0.0,b:1.0,g:0.0},r:1.0, o: rt::Vector::new(-0.5, 0.0, 0.0)};
@@ -17,8 +17,9 @@ fn main() {
     cam_conf.orig = rt::Vector::new(0.0, 0.0, -3.0);
     cam_conf.look_at(rt::Vector::new(0.0, 0.1, 0.0));
     cam_conf.super_sampling_factor = 1;
-    cam_conf.rays_per_pixel = 1;
+    cam_conf.rays_per_pixel = 5;
     cam_conf.threads = 2;
+    cam_conf.steps = 2;
     let cam = cam_conf.build();
     timer.add();
     let p = cam.take_pic(&world);

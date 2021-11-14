@@ -9,6 +9,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
 
+use crate::world::entities::Entity;
 use rand::rngs::SmallRng;
 use rand::FromEntropy;
 use rand::Rng;
@@ -97,7 +98,7 @@ impl CameraBuilder {
 }
 
 impl Camera {
-    pub fn take_pic(&self, world: &Arc<World>) -> ImageBuffer<PixelColor, Vec<u8>> {
+    pub fn take_pic<E: Entity>(&self, world: &Arc<World<E>>) -> ImageBuffer<PixelColor, Vec<u8>> {
         let mut pic = ImageBuffer::new(self.width, self.height);
 
         let width_per_thread = self.width / self.threads;

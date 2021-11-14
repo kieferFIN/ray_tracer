@@ -3,6 +3,7 @@ pub mod entities;
 use self::entities::Triangle;
 use crate::types::*;
 
+use crate::world::entities::Entity;
 use rand::rngs::SmallRng;
 use rand::FromEntropy;
 use rand::Rng;
@@ -10,33 +11,33 @@ use std::f64;
 use std::f64::consts::PI;
 use std::sync::Arc;
 
-pub struct WorldBuilder {
-    entities: Vec<Triangle>,
+pub struct WorldBuilder<E> {
+    entities: Vec<E>,
     pub light: Light,
 }
 
-impl WorldBuilder {
-    pub fn from_triangles(entities: Vec<Triangle>) -> WorldBuilder {
+impl<E> WorldBuilder<E> {
+    pub fn from_entities(entities: Vec<E>) -> WorldBuilder<E> {
         WorldBuilder {
             entities,
             light: Light::default(),
         }
     }
 
-    pub fn new() -> WorldBuilder {
+    pub fn new() -> WorldBuilder<E> {
         WorldBuilder {
             entities: Vec::new(),
             light: Light::default(),
         }
     }
 
-    pub fn add_triangle(&mut self, t: Triangle) {
-        self.entities.push(t);
+    pub fn add_entity(&mut self, e: E) {
+        self.entities.push(e);
     }
 
-    pub fn build(self) -> Arc<World> {
+    pub fn build(self) -> Arc<World<E>> {
         let w = World {
-            triangles: self.entities,
+            entities: self.entities,
             light: self.light,
         };
         Arc::new(w)
@@ -44,18 +45,20 @@ impl WorldBuilder {
 }
 //****************************************************
 
-pub struct World {
-    triangles: Vec<Triangle>,
+pub struct World<E> {
+    entities: Vec<E>,
     light: Light,
 }
 
-impl World {
+impl<E> World<E>
+where
+    E: Entity,
+{
     pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
-        //let mut c = Color::white();
-        RayBouncer::new(steps, ray, &self.triangles)
-            .scan(Color::white(), |c, (h, p)| {
+        RayBouncer::new(steps, ray, &self.entities)
+            .scan(Color::white(), |c, h| {
                 *c *= h.c;
-                Some(*c * self.get_radiance_from_light(&p, &h.n))
+                Some(*c * self.get_radiance_from_light(&h.p, &h.n))
             })
             .reduce(|c1, c2| c1 + c2)
             .unwrap_or_else(Color::black)
@@ -81,47 +84,48 @@ impl World {
     }
 
     fn is_something_blocking(&self, ray: &Ray) -> bool {
-        self.triangles
+        self.entities
             .iter()
             .any(|t| t.hit(&ray).filter(|h| h.t < 1.0).is_some())
     }
 }
 
-struct RayBouncer<'a> {
+struct RayBouncer<'a, E> {
     ray: Ray,
-    triangles: &'a Vec<Triangle>,
+    entities: &'a Vec<E>,
     steps: u32,
 }
 
-impl<'a> RayBouncer<'a> {
-    fn new(steps: u32, ray: Ray, triangles: &'a Vec<Triangle>) -> Self {
+impl<'a, E> RayBouncer<'a, E> {
+    fn new(steps: u32, ray: Ray, entities: &'a Vec<E>) -> Self {
         RayBouncer {
             ray,
-            triangles,
+            entities,
             steps,
         }
     }
 }
 
-impl<'a> Iterator for RayBouncer<'a> {
-    type Item = (Hit, Vector);
+impl<'a, E> Iterator for RayBouncer<'a, E>
+where
+    E: Entity,
+{
+    type Item = Hit;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let epsilon = 0.01;
         if self.steps == 0 {
             None
         } else {
             if let Some(hit) = self
-                .triangles
+                .entities
                 .iter()
                 .filter_map(|t| t.hit(&self.ray))
                 .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
             {
-                let point = self.ray.orig + self.ray.dir * (hit.t - epsilon);
                 let dir = random_dir_in_hemisphere(&hit.n);
-                self.ray = Ray::new(point, dir);
+                self.ray = Ray::new(hit.p, dir);
                 self.steps -= 1;
-                Some((hit, point))
+                Some(hit)
             } else {
                 None
             }

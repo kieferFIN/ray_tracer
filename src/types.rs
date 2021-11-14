@@ -119,6 +119,7 @@ pub struct Hit {
     pub t: f64,
     pub n: Vector,
     pub c: Color,
+    pub p: Vector,
 }
 
 // ********************************************************

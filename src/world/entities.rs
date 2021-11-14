@@ -2,9 +2,10 @@ use crate::types::*;
 
 use nalgebra::Matrix3;
 
-/*pub trait Entity{
+pub trait Entity: Sync + Send + 'static {
     fn hit(&self, ray: &Ray) -> Option<Hit>;
 }
+/*
 pub struct TestBall {
     pub c: Color,
     pub r: f64,
@@ -76,8 +77,9 @@ pub struct Triangle {
     pub a_c: Vector,
 }
 
-impl Triangle {
-    pub fn hit(&self, ray: &Ray) -> Option<Hit> {
+impl Entity for Triangle {
+    fn hit(&self, ray: &Ray) -> Option<Hit> {
+        let epsilon = 0.01;
         let m = Matrix3::from_columns(&[self.a_b, self.a_c, ray.dir]);
         let decomp = m.lu();
         let b = self.vertices[0] - ray.orig;
@@ -93,13 +95,15 @@ impl Triangle {
         let n = (self.normals[0] * alpha + self.normals[1] * beta + self.normals[2] * gamma)
             .normalize();
         if t > 0.0 && n.dot(&ray.dir) < 0.0 {
-            return Some(Hit {
+            Some(Hit {
                 t,
                 n,
                 c: self.color,
-            });
+                p: ray.orig + ray.dir * (t - epsilon),
+            })
+        } else {
+            None
         }
-        None
     }
 }
 // ********************************************************
