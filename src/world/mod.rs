@@ -1,12 +1,13 @@
 pub mod entities;
+mod light;
 
-use self::entities::Triangle;
+pub use light::Light;
+
 use crate::types::*;
 
 use crate::world::entities::Entity;
 use rand::rngs::SmallRng;
-use rand::FromEntropy;
-use rand::Rng;
+use rand::{FromEntropy, Rng};
 use std::f64;
 use std::f64::consts::PI;
 use std::sync::Arc;
@@ -154,47 +155,3 @@ fn random_dir_in_hemisphere(n: &Vector) -> Vector {
     x * a + y * b + z * n
 }
 //****************************************************
-
-pub struct Light {
-    orig: Vector,
-    a: Vector,
-    b: Vector,
-    n: Vector,
-    I: Color,
-    A: f64,
-}
-
-impl Light {
-    pub fn new(orig: Vector, a: Vector, b: Vector, I: Color) -> Light {
-        let cross = a.cross(&b);
-        Light {
-            orig,
-            a,
-            b,
-            n: cross.normalize(),
-            A: cross.norm(),
-            I,
-        }
-    }
-
-    pub fn default() -> Light {
-        Light::new(
-            Vector::new(-0.2, 0.9, -0.2),
-            Vector::new(0.4, 0.0, 0.0),
-            Vector::new(0.0, 0.0, 0.4),
-            Color::new(3.0, 2.9, 2.0),
-        )
-    }
-
-    pub fn get_sample_points(&self) -> [Vector; 4] {
-        let mut rng = SmallRng::from_entropy();
-        [
-            self.orig + self.a * rng.gen::<f64>() * 0.5 + self.b * rng.gen::<f64>() * 0.5,
-            self.orig + self.a * (rng.gen::<f64>() * 0.5 + 0.5) + self.b * rng.gen::<f64>() * 0.5,
-            self.orig + self.a * rng.gen::<f64>() * 0.5 + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
-            self.orig
-                + self.a * (rng.gen::<f64>() * 0.5 + 0.5)
-                + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
-        ]
-    }
-}

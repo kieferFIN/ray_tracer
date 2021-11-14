@@ -1,0 +1,11 @@
+[world]
+file = "cornell.obj"
+
+[camera]
+size = [400,300]
+orig = [0,0,-3]
+look_at = [0,0.1,0]
+rays_per_pixel = 4
+steps = 2
+threads = 2
+

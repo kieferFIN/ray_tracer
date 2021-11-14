@@ -1,10 +1,16 @@
 [package]
 name = "ray_tracer"
-version = "0.2.0"
+version = "0.2.2"
 authors = ["kiefer <eero.manty@gmail.com>"]
 edition = "2018"
 
 [dependencies]
 image = "0.23"
 nalgebra = "0.29"
-rand ="*"
+rand = "*"
+toml = "0.5"
+serde = { version = "1.0", features = ["derive"] }
+
+[profile.release.build-override]
+opt-level = 3
+codegen-units = 128
