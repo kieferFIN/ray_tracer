@@ -50,53 +50,82 @@ pub struct World {
 }
 
 impl World {
-    pub fn shoot_ray(&self, mut ray: Ray, steps: u32) -> Vec<Color> {
-        let epsilon = 0.01;
-        let mut colors = Vec::new();
-        let mut c = Color::gray(1.0);
-
-        for _ in 0..steps {
-            if let Some(hit) = self
-                .triangles
-                .iter()
-                .filter_map(|t| t.hit(&ray))
-                .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
-            {
-                c *= hit.c;
-                let point = ray.orig + ray.dir * (hit.t - epsilon);
-                colors.push(c * self.get_radiance_from_light(&point, &hit.n));
-                let dir = random_dir_in_hemisphere(&hit.n);
-                ray = Ray::new(point, dir);
-            } else {
-                break;
-            }
-        }
-        colors
+    pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
+        //let mut c = Color::white();
+        RayBouncer::new(steps, ray, &self.triangles)
+            .scan(Color::white(), |c, (h, p)| {
+                *c *= h.c;
+                Some(*c * self.get_radiance_from_light(&p, &h.n))
+            })
+            .reduce(|c1, c2| c1 + c2)
+            .unwrap_or_else(Color::black)
     }
 
     fn get_radiance_from_light(&self, p: &Vector, n: &Vector) -> Color {
-        let samples_from_light = self.light.get_sample_points();
-        let mut est: f64 = 0.0;
-        for s in samples_from_light.iter() {
-            let dir = p - s;
-            let ray = Ray::new(*s, dir);
-            let dir = dir.normalize();
-            if self.is_not_something_blocking(&ray) {
-                est += self.light.n.dot(&dir).abs() * -n.dot(&dir) / dir.norm_squared();
-            }
-        }
+        let est: f64 = self
+            .light
+            .get_sample_points()
+            .iter()
+            .map(|s| {
+                let dir = p - s;
+                let ray = Ray::new(*s, dir);
+                if self.is_something_blocking(&ray) {
+                    0.0
+                } else {
+                    let dir = dir.normalize();
+                    self.light.n.dot(&dir).abs() * -n.dot(&dir) / dir.norm_squared()
+                }
+            })
+            .sum();
         self.light.I * (est * self.light.A / (PI)).max(0.0)
     }
 
-    fn is_not_something_blocking(&self, ray: &Ray) -> bool {
-        for e in &self.triangles {
-            if let Some(hit) = e.hit(&ray) {
-                if hit.t < 1.0 {
-                    return false;
-                }
+    fn is_something_blocking(&self, ray: &Ray) -> bool {
+        self.triangles
+            .iter()
+            .any(|t| t.hit(&ray).filter(|h| h.t < 1.0).is_some())
+    }
+}
+
+struct RayBouncer<'a> {
+    ray: Ray,
+    triangles: &'a Vec<Triangle>,
+    steps: u32,
+}
+
+impl<'a> RayBouncer<'a> {
+    fn new(steps: u32, ray: Ray, triangles: &'a Vec<Triangle>) -> Self {
+        RayBouncer {
+            ray,
+            triangles,
+            steps,
+        }
+    }
+}
+
+impl<'a> Iterator for RayBouncer<'a> {
+    type Item = (Hit, Vector);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let epsilon = 0.01;
+        if self.steps == 0 {
+            None
+        } else {
+            if let Some(hit) = self
+                .triangles
+                .iter()
+                .filter_map(|t| t.hit(&self.ray))
+                .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
+            {
+                let point = self.ray.orig + self.ray.dir * (hit.t - epsilon);
+                let dir = random_dir_in_hemisphere(&hit.n);
+                self.ray = Ray::new(point, dir);
+                self.steps -= 1;
+                Some((hit, point))
+            } else {
+                None
             }
         }
-        true
     }
 }
 
@@ -163,6 +192,5 @@ impl Light {
                 + self.a * (rng.gen::<f64>() * 0.5 + 0.5)
                 + self.b * (rng.gen::<f64>() * 0.5 + 0.5),
         ]
-        //[self.orig , self.orig+self.a, self.orig+self.b, self.orig+self.a+self.b]
     }
 }

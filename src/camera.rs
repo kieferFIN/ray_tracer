@@ -4,6 +4,7 @@ use crate::world::World;
 use image::imageops::{resize, FilterType};
 use image::ImageBuffer;
 
+use rand::distributions::Standard;
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
@@ -72,9 +73,10 @@ impl CameraBuilder {
             let h = w * ratio;
             let width_vector = w * right;
             let height_vector = h * down;
-            let upper_left = orig + dir - width_vector / 2.0 - height_vector / 2.0;
             let dx = width_vector / width as f64;
             let dy = height_vector / height as f64;
+            let upper_left = orig + dir - width_vector / 2.0 - height_vector / 2.0;
+
             (upper_left, dx, dy)
         };
 
@@ -115,28 +117,30 @@ impl Camera {
             let orig = self.orig;
             let w = Arc::clone(world);
             let steps = self.steps;
-            let rpp = self.rays_per_pixel;
+            let rpp = self.rays_per_pixel as usize;
 
             let t = thread::spawn(move || {
                 let mut rng = SmallRng::from_entropy();
                 for y in 0..height_per_thread {
                     for x in 0..width_per_thread {
-                        let mut sum = Color::black();
-                        let mut weight_sum = 0.0;
-                        for _ in 0..rpp {
-                            let x_off = rng.gen::<f64>();
-                            let y_off = rng.gen::<f64>();
-                            let weight = (x_off - 0.5).powi(2) + (y_off - 0.5).powi(2);
-                            let c = w.shoot_ray(
-                                Ray::look_at(
-                                    orig,
-                                    upper_left + dx * (x as f64 + x_off) + dy * (y as f64 + y_off),
-                                ),
-                                steps,
-                            );
-                            sum += c.iter().fold(Color::black(), |a, b| a + *b) * weight;
-                            weight_sum += weight
-                        }
+                        let (sum, weight_sum) = (&mut rng)
+                            .sample_iter(&Standard)
+                            .take(rpp)
+                            .map(|(x_off, y_off): (f64, f64)| {
+                                let weight = (x_off - 0.5).powi(2) + (y_off - 0.5).powi(2);
+                                let c = w.shoot_ray(
+                                    Ray::look_at(
+                                        orig,
+                                        upper_left
+                                            + dx * (x as f64 + x_off)
+                                            + dy * (y as f64 + y_off),
+                                    ),
+                                    steps,
+                                );
+                                (c * weight, weight)
+                            })
+                            .reduce(|(c1, w1), (c2, w2)| (c1 + c2, w1 + w2))
+                            .unwrap_or((Color::black(), 1.0));
                         s.send((x + x0, y + y0, sum / weight_sum)).unwrap();
                     }
                 }
