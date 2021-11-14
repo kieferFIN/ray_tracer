@@ -3,6 +3,16 @@ use std::ops::{Add, AddAssign, Div, Mul, MulAssign};
 pub type Vector = nalgebra::Vector3<f64>;
 pub type PixelColor = image::Rgb<u8>;
 
+pub trait ToVector {
+    fn to_vector(self) -> Vector;
+}
+
+impl ToVector for (f64, f64, f64) {
+    fn to_vector(self) -> Vector {
+        Vector::new(self.0, self.1, self.2)
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct Color {
     pub r: f64,
@@ -31,6 +41,12 @@ impl Color {
 
     pub fn gray(c: f64) -> Color {
         Color { r: c, g: c, b: c }
+    }
+}
+
+impl From<(f64, f64, f64)> for Color {
+    fn from(t: (f64, f64, f64)) -> Self {
+        Color::new(t.0, t.1, t.2)
     }
 }
 

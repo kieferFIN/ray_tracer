@@ -32,6 +32,10 @@ impl<E> WorldBuilder<E> {
         }
     }
 
+    pub fn add_light(&mut self, l: Light) {
+        self.light = l;
+    }
+
     pub fn add_entity(&mut self, e: E) {
         self.entities.push(e);
     }

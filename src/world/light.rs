@@ -14,24 +14,25 @@ pub struct Light {
 
 impl Light {
     #[allow(non_snake_case)]
-    pub fn new(orig: Vector, a: Vector, b: Vector, I: Color) -> Light {
+    pub fn new(center: Vector, a: Vector, b: Vector, c: Color) -> Light {
         let cross = a.cross(&b);
+        let A = cross.norm();
         Light {
-            orig,
+            orig: center - a / 2.0 - b / 2.0,
             a,
             b,
             n: cross.normalize(),
-            A: cross.norm(),
-            I,
+            A,
+            I: c / A,
         }
     }
 
     pub fn default() -> Light {
         Light::new(
-            Vector::new(-0.2, 0.9, -0.2),
-            Vector::new(0.4, 0.0, 0.0),
-            Vector::new(0.0, 0.0, 0.4),
-            Color::new(3.0, 2.9, 2.0),
+            Vector::new(-0.25, 0.0, -0.25),
+            Vector::new(0.5, 0.0, 0.0),
+            Vector::new(0.0, 0.0, 0.5),
+            Color::new(1.0, 1.0, 1.0),
         )
     }
 

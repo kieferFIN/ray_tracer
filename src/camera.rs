@@ -103,7 +103,7 @@ impl Camera {
 
         let width_per_thread = self.width / self.threads;
         let height_per_thread = self.height / self.threads;
-        println!("{} {}", width_per_thread, height_per_thread);
+        // println!("{} {}", width_per_thread, height_per_thread);
 
         let mut thread_container = vec![];
         let (sender, receiver) = mpsc::channel();

@@ -1,7 +1,7 @@
 use crate::camera::Camera;
 use crate::world::entities::Triangle;
-use crate::world::World;
-use crate::{read_obj_file, CameraBuilder, Vector, WorldBuilder};
+use crate::world::{Light, World};
+use crate::{read_obj_file, CameraBuilder, ToVector, WorldBuilder};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -15,14 +15,20 @@ impl Config {
     pub fn create_world(&self) -> Arc<World<Triangle>> {
         match &self.world {
             Some(w) => w.create(),
-            _ => WorldBuilder::new().build(),
+            _ => {
+                println!("No world specified, default created");
+                WorldBuilder::new().build()
+            }
         }
     }
 
     pub fn create_camera(&self) -> Camera {
         match &self.camera {
             Some(c) => c.create(),
-            _ => CameraBuilder::new().build(),
+            _ => {
+                println!("No camera specified, default created");
+                CameraBuilder::new().build()
+            }
         }
     }
 }
@@ -30,14 +36,41 @@ impl Config {
 #[derive(Debug, Deserialize)]
 struct W {
     file: Option<String>,
+    light: Option<L>,
 }
 
 impl W {
     fn create(&self) -> Arc<World<Triangle>> {
-        match &self.file {
-            Some(file) => WorldBuilder::from_entities(read_obj_file(&file).unwrap()).build(),
-            _ => WorldBuilder::new().build(),
-        }
+        let mut wb = match &self.file {
+            Some(file) => WorldBuilder::from_entities(read_obj_file(&file).unwrap()),
+            _ => WorldBuilder::new(),
+        };
+        if let Some(l) = &self.light {
+            wb.add_light(l.create());
+        } else {
+            println!("No light specified, using default");
+        };
+        wb.build()
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[allow(non_snake_case)]
+struct L {
+    center: (f64, f64, f64),
+    a: (f64, f64, f64),
+    b: (f64, f64, f64),
+    I: (f64, f64, f64),
+}
+
+impl L {
+    fn create(&self) -> Light {
+        Light::new(
+            self.center.to_vector(),
+            self.a.to_vector(),
+            self.b.to_vector(),
+            self.I.into(),
+        )
     }
 }
 
@@ -57,17 +90,17 @@ struct C {
 impl C {
     fn create(&self) -> Camera {
         let mut cb = CameraBuilder::new();
-        if let Some((x, y, z)) = self.orig {
-            cb.orig = Vector::new(x, y, z);
+        if let Some(v) = self.orig {
+            cb.orig = v.to_vector();
         }
         if let Some(v) = self.size {
             cb.size = v;
         }
-        if let Some((x, y, z)) = self.look_at {
-            cb.look_at(Vector::new(x, y, z));
+        if let Some(v) = self.look_at {
+            cb.look_at(v.to_vector());
         }
-        if let Some((x, y, z)) = self.up {
-            cb.up = Vector::new(x, y, z);
+        if let Some(v) = self.up {
+            cb.up = v.to_vector();
         }
         if let Some(v) = self.super_sampling_factor {
             cb.super_sampling_factor = v;
