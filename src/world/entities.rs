@@ -79,7 +79,7 @@ pub struct Triangle {
 
 impl Entity for Triangle {
     fn hit(&self, ray: &Ray) -> Option<Hit> {
-        let epsilon = 0.01;
+        const EPSILON: f64 = 0.01;
         let m = Matrix3::from_columns(&[self.a_b, self.a_c, ray.dir]);
         let decomp = m.lu();
         let b = self.vertices[0] - ray.orig;
@@ -102,7 +102,7 @@ impl Entity for Triangle {
                 t,
                 n,
                 c: self.color,
-                p: ray.orig + ray.dir * (t - epsilon),
+                p: ray.orig + ray.dir * (t - EPSILON),
             })
         } else {
             None

@@ -122,8 +122,10 @@ impl Camera {
             let mut rng = SmallRng::from_rng(&mut thread_rng).unwrap();
 
             let t = thread::spawn(move || {
+                let width = width_per_thread as usize;
+                let mut buffer = vec![Color::black(); width];
                 for y in 0..height_per_thread {
-                    for x in 0..width_per_thread {
+                    for x in 0..width {
                         let (sum, weight_sum) = rng
                             .sample_iter(&Standard)
                             .take(rpp)
@@ -142,16 +144,19 @@ impl Camera {
                             })
                             .reduce(|(c1, w1), (c2, w2)| (c1 + c2, w1 + w2))
                             .unwrap_or((Color::black(), 1.0));
-                        s.send((x + x0, y + y0, sum / weight_sum)).unwrap();
+                        buffer[x] = sum / weight_sum;
                     }
+                    s.send((x0, y0 + y, buffer.clone())).unwrap();
                 }
             });
             thread_container.push(t);
         }
         drop(sender);
 
-        for (x, y, c) in receiver {
-            pic.put_pixel(x, y, c.to_pixel());
+        for (x0, y0, buffer) in receiver {
+            for (x, c) in buffer.iter().enumerate() {
+                pic.put_pixel(x as u32 + x0, y0, c.to_pixel())
+            }
         }
 
         for t in thread_container {
