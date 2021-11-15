@@ -152,12 +152,19 @@ impl Camera {
             thread_container.push(t);
         }
         drop(sender);
-
+        let step = (self.threads * self.threads * height_per_thread) / 10;
+        let mut s = 0;
         for (x0, y0, buffer) in receiver {
             for (x, c) in buffer.iter().enumerate() {
-                pic.put_pixel(x as u32 + x0, y0, c.to_pixel())
+                pic.put_pixel(x as u32 + x0, y0, c.into())
             }
+            s += 1;
+            if s > step {
+                s -= step;
+                eprint!("*")
+            };
         }
+        eprint!("  Done \n");
 
         for t in thread_container {
             t.join().unwrap();

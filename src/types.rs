@@ -24,13 +24,6 @@ impl Color {
     pub fn new(r: f64, g: f64, b: f64) -> Color {
         Color { r, g, b }
     }
-    pub fn to_pixel(&self) -> PixelColor {
-        image::Rgb([
-            (self.r.max(0.0).min(1.0) * 255.0) as u8,
-            (self.g.max(0.0).min(1.0) * 255.0) as u8,
-            (self.b.max(0.0).min(1.0) * 255.0) as u8,
-        ])
-    }
 
     pub fn black() -> Color {
         Color::gray(0.0)
@@ -47,6 +40,16 @@ impl Color {
 impl From<(f64, f64, f64)> for Color {
     fn from(t: (f64, f64, f64)) -> Self {
         Color::new(t.0, t.1, t.2)
+    }
+}
+
+impl From<&Color> for PixelColor {
+    fn from(c: &Color) -> Self {
+        image::Rgb([
+            (c.r.max(0.0).min(1.0) * 255.0) as u8,
+            (c.g.max(0.0).min(1.0) * 255.0) as u8,
+            (c.b.max(0.0).min(1.0) * 255.0) as u8,
+        ])
     }
 }
 
