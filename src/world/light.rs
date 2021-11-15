@@ -1,6 +1,5 @@
 use crate::{Color, Vector};
-use rand::rngs::SmallRng;
-use rand::{FromEntropy, Rng};
+use rand::Rng;
 
 #[allow(non_snake_case)]
 pub struct Light {
@@ -36,8 +35,7 @@ impl Light {
         )
     }
 
-    pub fn get_sample_points(&self) -> [Vector; 4] {
-        let mut rng = SmallRng::from_entropy();
+    pub fn get_sample_points<R: Rng>(&self, rng: &mut R) -> [Vector; 4] {
         [
             self.orig + self.a * rng.gen::<f64>() * 0.5 + self.b * rng.gen::<f64>() * 0.5,
             self.orig + self.a * (rng.gen::<f64>() * 0.5 + 0.5) + self.b * rng.gen::<f64>() * 0.5,

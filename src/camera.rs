@@ -11,8 +11,7 @@ use std::thread;
 
 use crate::world::entities::Entity;
 use rand::rngs::SmallRng;
-use rand::FromEntropy;
-use rand::Rng;
+use rand::{thread_rng, Rng, SeedableRng};
 
 pub struct Camera {
     orig: Vector,
@@ -104,6 +103,7 @@ impl Camera {
         let width_per_thread = self.width / self.threads;
         let height_per_thread = self.height / self.threads;
         // println!("{} {}", width_per_thread, height_per_thread);
+        let mut thread_rng = thread_rng();
 
         let mut thread_container = vec![];
         let (sender, receiver) = mpsc::channel();
@@ -119,12 +119,12 @@ impl Camera {
             let w = Arc::clone(world);
             let steps = self.steps;
             let rpp = self.rays_per_pixel as usize;
+            let mut rng = SmallRng::from_rng(&mut thread_rng).unwrap();
 
             let t = thread::spawn(move || {
-                let mut rng = SmallRng::from_entropy();
                 for y in 0..height_per_thread {
                     for x in 0..width_per_thread {
-                        let (sum, weight_sum) = (&mut rng)
+                        let (sum, weight_sum) = rng
                             .sample_iter(&Standard)
                             .take(rpp)
                             .map(|(x_off, y_off): (f64, f64)| {

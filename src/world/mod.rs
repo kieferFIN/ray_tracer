@@ -60,19 +60,20 @@ where
     E: Entity,
 {
     pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
+        let mut rng = SmallRng::from_entropy();
         RayBouncer::new(steps, ray, &self.entities)
             .scan(Color::white(), |c, h| {
                 *c *= h.c;
-                Some(*c * self.get_radiance_from_light(&h.p, &h.n))
+                Some(*c * self.get_radiance_from_light(&h.p, &h.n, &mut rng))
             })
             .reduce(|c1, c2| c1 + c2)
             .unwrap_or_else(Color::black)
     }
 
-    fn get_radiance_from_light(&self, p: &Vector, n: &Vector) -> Color {
+    fn get_radiance_from_light<R: Rng>(&self, p: &Vector, n: &Vector, rng: &mut R) -> Color {
         let est: f64 = self
             .light
-            .get_sample_points()
+            .get_sample_points(rng)
             .iter()
             .map(|s| {
                 let dir = p - s;
@@ -99,14 +100,16 @@ struct RayBouncer<'a, E> {
     ray: Ray,
     entities: &'a Vec<E>,
     steps: u32,
+    rng: SmallRng,
 }
 
-impl<'a, E> RayBouncer<'a, E> {
+impl<'a, 'r, E> RayBouncer<'a, E> {
     fn new(steps: u32, ray: Ray, entities: &'a Vec<E>) -> Self {
         RayBouncer {
             ray,
             entities,
             steps,
+            rng: SmallRng::from_entropy(),
         }
     }
 }
@@ -127,8 +130,10 @@ where
                 .filter_map(|t| t.hit(&self.ray))
                 .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
             {
-                let dir = random_dir_in_hemisphere(&hit.n);
+                let dir = random_dir_in_hemisphere(&hit.n, &mut self.rng);
                 self.ray = Ray::new(hit.p, dir);
+                //let R = 2.0 * (hit.n * hit.n.transpose()) - Matrix3::identity();
+                //self.ray = Ray::new(hit.p, -R * self.ray.dir);
                 self.steps -= 1;
                 Some(hit)
             } else {
@@ -138,14 +143,13 @@ where
     }
 }
 
-fn random_dir_in_hemisphere(n: &Vector) -> Vector {
+fn random_dir_in_hemisphere<R: Rng>(n: &Vector, rng: &mut R) -> Vector {
     let a = if n.y.powi(2) + n.x.powi(2) > 0.1 {
         Vector::new(n.y, -n.x, 0.0).normalize()
     } else {
         Vector::new(n.z, 0.0, -n.x).normalize()
     };
 
-    let mut rng = SmallRng::from_entropy();
     let r = rng.gen::<f64>();
     let angle = rng.gen::<f64>() * 2.0 * PI;
     let (sin, cos) = angle.sin_cos();

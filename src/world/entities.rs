@@ -83,7 +83,10 @@ impl Entity for Triangle {
         let m = Matrix3::from_columns(&[self.a_b, self.a_c, ray.dir]);
         let decomp = m.lu();
         let b = self.vertices[0] - ray.orig;
-        let x = decomp.solve(&b).expect("Linear resolution failed.");
+        let x = match decomp.solve(&b) {
+            Some(x) => x,
+            None => return None,
+        };
         let beta = x.x;
         let gamma = x.y;
         let t = x.z;
