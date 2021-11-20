@@ -1,11 +1,14 @@
+mod bvh;
+pub(crate) mod container;
 pub mod entities;
 mod light;
 
+pub use container::{BasicCreator, Container, ContainerCreator};
 pub use light::Light;
 
 use crate::types::*;
-
 use crate::world::entities::Entity;
+
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng};
 use std::f64;
@@ -39,26 +42,26 @@ impl<E> WorldBuilder<E> {
     pub fn add_entity(&mut self, e: E) {
         self.entities.push(e);
     }
+}
 
-    pub fn build(self) -> Arc<World<E>> {
+impl<E: Entity> WorldBuilder<E> {
+    pub fn build<CC: ContainerCreator<E>>(self) -> Arc<World<CC::Output>> {
         let w = World {
-            entities: self.entities,
+            entities: CC::create(self.entities),
             light: self.light,
         };
         Arc::new(w)
     }
 }
+
 //****************************************************
 
-pub struct World<E> {
-    entities: Vec<E>,
+pub struct World<C> {
+    entities: C,
     light: Light,
 }
 
-impl<E> World<E>
-where
-    E: Entity,
-{
+impl<C: Container> World<C> {
     pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
         let mut rng = SmallRng::from_entropy();
         RayBouncer::new(steps, ray, &self.entities)
@@ -90,21 +93,19 @@ where
     }
 
     fn is_something_blocking(&self, ray: &Ray) -> bool {
-        self.entities
-            .iter()
-            .any(|t| t.hit(&ray).filter(|h| h.t < 1.0).is_some())
+        self.entities.hits_any(ray)
     }
 }
 
-struct RayBouncer<'a, E> {
+struct RayBouncer<'a, C> {
     ray: Ray,
-    entities: &'a Vec<E>,
+    entities: &'a C,
     steps: u32,
     rng: SmallRng,
 }
 
-impl<'a, 'r, E> RayBouncer<'a, E> {
-    fn new(steps: u32, ray: Ray, entities: &'a Vec<E>) -> Self {
+impl<'a, 'r, C> RayBouncer<'a, C> {
+    fn new(steps: u32, ray: Ray, entities: &'a C) -> Self {
         RayBouncer {
             ray,
             entities,
@@ -114,10 +115,7 @@ impl<'a, 'r, E> RayBouncer<'a, E> {
     }
 }
 
-impl<'a, E> Iterator for RayBouncer<'a, E>
-where
-    E: Entity,
-{
+impl<'a, C: Container> Iterator for RayBouncer<'a, C> {
     type Item = Hit;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -126,8 +124,8 @@ where
         } else {
             if let Some(hit) = self
                 .entities
+                .hits(&self.ray)
                 .iter()
-                .filter_map(|t| t.hit(&self.ray))
                 .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
             {
                 let dir = random_dir_in_hemisphere(&hit.n, &mut self.rng);
@@ -135,7 +133,7 @@ where
                 //let R = 2.0 * (hit.n * hit.n.transpose()) - Matrix3::identity();
                 //self.ray = Ray::new(hit.p, -R * self.ray.dir);
                 self.steps -= 1;
-                Some(hit)
+                Some(hit.clone())
             } else {
                 None
             }

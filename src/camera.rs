@@ -1,5 +1,5 @@
 use crate::types::*;
-use crate::world::World;
+use crate::world::{Container, World};
 
 use image::imageops::{resize, FilterType};
 use image::ImageBuffer;
@@ -97,7 +97,10 @@ impl CameraBuilder {
 }
 
 impl Camera {
-    pub fn take_pic<E: Entity>(&self, world: &Arc<World<E>>) -> ImageBuffer<PixelColor, Vec<u8>> {
+    pub fn take_pic<C: Container>(
+        &self,
+        world: &Arc<World<C>>,
+    ) -> ImageBuffer<PixelColor, Vec<u8>> {
         let mut pic = ImageBuffer::new(self.width, self.height);
 
         let width_per_thread = self.width / self.threads;

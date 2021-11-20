@@ -133,7 +133,7 @@ impl Ray {
 }
 
 // ********************************************************
-
+#[derive(Clone)]
 pub struct Hit {
     pub t: f64,
     pub n: Vector,

@@ -1,4 +1,5 @@
 use crate::camera::Camera;
+use crate::world::container::{BasicCreator, ContainerCreator};
 use crate::world::entities::Triangle;
 use crate::world::{Light, World};
 use crate::{read_obj_file, CameraBuilder, ToVector, WorldBuilder};
@@ -12,12 +13,12 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn create_world(&self) -> Arc<World<Triangle>> {
+    pub fn create_world<CC: ContainerCreator<Triangle>>(&self) -> Arc<World<CC::Output>> {
         match &self.world {
-            Some(w) => w.create(),
+            Some(w) => w.create::<CC>(),
             _ => {
                 println!("No world specified, default created");
-                WorldBuilder::new().build()
+                WorldBuilder::new().build::<CC>()
             }
         }
     }
@@ -40,7 +41,7 @@ struct W {
 }
 
 impl W {
-    fn create(&self) -> Arc<World<Triangle>> {
+    fn create<CC: ContainerCreator<Triangle>>(&self) -> Arc<World<CC::Output>> {
         let mut wb = match &self.file {
             Some(file) => WorldBuilder::from_entities(read_obj_file(&file).unwrap()),
             _ => WorldBuilder::new(),
@@ -50,7 +51,7 @@ impl W {
         } else {
             println!("No light specified, using default");
         };
-        wb.build()
+        wb.build::<CC>()
     }
 }
 

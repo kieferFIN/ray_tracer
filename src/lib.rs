@@ -1,7 +1,7 @@
 mod camera;
 mod io;
 mod types;
-mod world;
+pub mod world;
 
 pub use self::camera::CameraBuilder;
 pub use self::io::read_obj_file;

@@ -8,7 +8,7 @@ fn main() {
     let config_str = fs::read_to_string("config.toml").unwrap();
     let config: Config = toml::from_str(&config_str).unwrap();
     timer.add();
-    let world = config.create_world();
+    let world = config.create_world::<rt::world::BasicCreator>();
     timer.add();
     let cam = config.create_camera();
     timer.add();
