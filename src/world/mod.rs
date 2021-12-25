@@ -93,7 +93,7 @@ impl<C: Container> World<C> {
     }
 
     fn is_something_blocking(&self, ray: &Ray) -> bool {
-        self.entities.hits_any(ray)
+        self.entities.hits(ray).any(|h| h.t < 1.0)
     }
 }
 
@@ -104,7 +104,7 @@ struct RayBouncer<'a, C> {
     rng: SmallRng,
 }
 
-impl<'a, 'r, C> RayBouncer<'a, C> {
+impl<'a, C> RayBouncer<'a, C> {
     fn new(steps: u32, ray: Ray, entities: &'a C) -> Self {
         RayBouncer {
             ray,
@@ -125,7 +125,6 @@ impl<'a, C: Container> Iterator for RayBouncer<'a, C> {
             if let Some(hit) = self
                 .entities
                 .hits(&self.ray)
-                .iter()
                 .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
             {
                 let dir = random_dir_in_hemisphere(&hit.n, &mut self.rng);

@@ -1,5 +1,5 @@
 use crate::camera::Camera;
-use crate::world::container::{BasicCreator, ContainerCreator};
+use crate::world::container::ContainerCreator;
 use crate::world::entities::Triangle;
 use crate::world::{Light, World};
 use crate::{read_obj_file, CameraBuilder, ToVector, WorldBuilder};
