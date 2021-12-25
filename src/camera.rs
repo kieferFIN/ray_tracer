@@ -9,7 +9,6 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use std::thread;
 
-use crate::world::entities::Entity;
 use rand::rngs::SmallRng;
 use rand::{thread_rng, Rng, SeedableRng};
 

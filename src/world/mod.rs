@@ -1,9 +1,11 @@
+mod basic_container;
 mod bvh;
 pub(crate) mod container;
 pub mod entities;
 mod light;
 
-pub use container::{BasicCreator, Container, ContainerCreator};
+pub use basic_container::BasicCreator;
+pub use container::{Container, ContainerCreator};
 pub use light::Light;
 
 use crate::types::*;
