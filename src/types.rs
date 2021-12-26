@@ -1,3 +1,5 @@
+use nalgebra::partial_cmp;
+use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign};
 
 pub type Vector = nalgebra::Vector3<f64>;
@@ -139,6 +141,18 @@ pub struct Hit {
     pub n: Vector,
     pub c: Color,
     pub p: Vector,
+}
+
+impl PartialOrd for Hit {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.t.partial_cmp(&other.t)
+    }
+}
+
+impl PartialEq<Self> for Hit {
+    fn eq(&self, other: &Self) -> bool {
+        self.t == other.t
+    }
 }
 
 // ********************************************************

@@ -5,12 +5,14 @@ pub mod entities;
 mod light;
 
 pub use basic_container::BasicCreator;
+pub use bvh::SimpleBVHCreator;
 pub use container::{Container, ContainerCreator};
 pub use light::Light;
 
 use crate::types::*;
 use crate::world::entities::Entity;
 
+use crate::world::container::EntitiesAdder;
 use rand::rngs::SmallRng;
 use rand::{FromEntropy, Rng};
 use std::f64;
@@ -47,9 +49,11 @@ impl<E> WorldBuilder<E> {
 }
 
 impl<E: Entity> WorldBuilder<E> {
-    pub fn build<CC: ContainerCreator<E>>(self) -> Arc<World<CC::Output>> {
+    pub fn build<CC: EntitiesAdder<E>>(self) -> Arc<World<CC::Output>> {
+        let mut cc = CC::new();
+        cc.add_entities(self.entities);
         let w = World {
-            entities: CC::create(self.entities),
+            entities: cc.create(),
             light: self.light,
         };
         Arc::new(w)
@@ -95,7 +99,7 @@ impl<C: Container> World<C> {
     }
 
     fn is_something_blocking(&self, ray: &Ray) -> bool {
-        self.entities.hits(ray).any(|h| h.t < 1.0)
+        self.entities.any_hit(ray, |h| h.t < 1.0)
     }
 }
 
@@ -124,11 +128,7 @@ impl<'a, C: Container> Iterator for RayBouncer<'a, C> {
         if self.steps == 0 {
             None
         } else {
-            if let Some(hit) = self
-                .entities
-                .hits(&self.ray)
-                .min_by(|h1, h2| h1.t.partial_cmp(&h2.t).unwrap())
-            {
+            if let Some(hit) = self.entities.closest_hit(&self.ray) {
                 let dir = random_dir_in_hemisphere(&hit.n, &mut self.rng);
                 self.ray = Ray::new(hit.p, dir);
                 //let R = 2.0 * (hit.n * hit.n.transpose()) - Matrix3::identity();

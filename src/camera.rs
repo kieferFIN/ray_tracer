@@ -1,4 +1,5 @@
 use crate::types::*;
+use crate::world::entities::Entity;
 use crate::world::{Container, World};
 
 use image::imageops::{resize, FilterType};

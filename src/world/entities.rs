@@ -70,9 +70,9 @@ impl TriangleBuilder {
 }
 
 pub struct Triangle {
-    color: Color,
-    vertices: [Vector; 3],
-    normals: [Vector; 3],
+    pub color: Color,
+    pub vertices: [Vector; 3],
+    pub normals: [Vector; 3],
     pub a_b: Vector,
     pub a_c: Vector,
 }
