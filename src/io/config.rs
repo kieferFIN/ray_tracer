@@ -2,7 +2,7 @@ use crate::camera::Camera;
 use crate::world::container::{ContainerCreator, EntitiesAdder};
 use crate::world::entities::Triangle;
 use crate::world::{Light, World};
-use crate::{read_obj_file, CameraBuilder, ToVector, WorldBuilder};
+use crate::{read_obj_file, CameraBuilder, Hit, Ray, ToVector, WorldBuilder};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -13,7 +13,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn create_world<CC: EntitiesAdder<Triangle>>(&self) -> Arc<World<CC::Output>> {
+    pub fn create_world<CC: EntitiesAdder<Triangle, Ray, Hit>>(&self) -> Arc<World<CC::Output>> {
         match &self.world {
             Some(w) => w.create::<CC>(),
             _ => {
@@ -41,7 +41,7 @@ struct W {
 }
 
 impl W {
-    fn create<CC: EntitiesAdder<Triangle>>(&self) -> Arc<World<CC::Output>> {
+    fn create<CC: EntitiesAdder<Triangle, Ray, Hit>>(&self) -> Arc<World<CC::Output>> {
         let mut wb = match &self.file {
             Some(file) => WorldBuilder::from_entities(read_obj_file(&file).unwrap()),
             _ => WorldBuilder::new(),

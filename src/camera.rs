@@ -1,5 +1,4 @@
 use crate::types::*;
-use crate::world::entities::Entity;
 use crate::world::{Container, World};
 
 use image::imageops::{resize, FilterType};
@@ -97,7 +96,7 @@ impl CameraBuilder {
 }
 
 impl Camera {
-    pub fn take_pic<C: Container>(
+    pub fn take_pic<C: Container<Ray, Hit>>(
         &self,
         world: &Arc<World<C>>,
     ) -> ImageBuffer<PixelColor, Vec<u8>> {

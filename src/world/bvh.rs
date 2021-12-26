@@ -1,8 +1,7 @@
-use crate::world::container::{ContainerWithIter, EntitiesAdder};
+use crate::world::container::EntitiesAdder;
 use crate::world::entities::{Entity, Triangle};
 use crate::world::{Container, ContainerCreator};
 use crate::{Hit, Ray, ToVector, Vector};
-use nalgebra::{Matrix3, Matrix3x2};
 
 struct BVH {
     nodes: Vec<BvhNode>,
@@ -86,7 +85,7 @@ pub struct SimpleBVHCreator<E> {
     entities: Vec<E>,
 }
 
-impl<E: Entity> Container for SimpleBVH<E> {
+impl<E: Entity> Container<Ray, Hit> for SimpleBVH<E> {
     fn closest_hit(&self, r: &Ray) -> Option<Hit> {
         let mut hit: Option<Hit> = None;
         let mut t = f64::INFINITY;
@@ -121,7 +120,7 @@ impl<E: Entity> Container for SimpleBVH<E> {
     }
 }
 
-impl<E: Entity + ToAABB> ContainerCreator for SimpleBVHCreator<E> {
+impl<E: Entity + ToAABB> ContainerCreator<Ray, Hit> for SimpleBVHCreator<E> {
     type Output = SimpleBVH<E>;
 
     fn new() -> Self {
@@ -142,7 +141,7 @@ impl<E: Entity + ToAABB> ContainerCreator for SimpleBVHCreator<E> {
     }
 }
 
-impl<E: Entity + ToAABB> EntitiesAdder<E> for SimpleBVHCreator<E> {
+impl<E: Entity + ToAABB> EntitiesAdder<E, Ray, Hit> for SimpleBVHCreator<E> {
     fn add_entities(&mut self, v: Vec<E>) {
         self.entities = v;
     }

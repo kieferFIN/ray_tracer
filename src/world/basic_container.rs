@@ -7,7 +7,7 @@ pub struct BasicContainer<E> {
     entities: Vec<E>,
 }
 
-impl<E: Entity> Container for BasicContainer<E> {
+impl<E: Entity> Container<Ray, Hit> for BasicContainer<E> {
     fn closest_hit(&self, r: &Ray) -> Option<Hit> {
         self.entities
             .iter()
@@ -20,7 +20,7 @@ impl<E: Entity> Container for BasicContainer<E> {
     }
 }
 
-impl<E: Entity> ContainerWithIter for BasicContainer<E> {
+impl<E: Entity> ContainerWithIter<Ray, Hit> for BasicContainer<E> {
     type IndexType = usize;
 
     fn next(&self, ray: &Ray, i: &mut usize) -> Option<Hit> {
@@ -45,7 +45,7 @@ pub struct BasicCreator<E: Entity> {
     entities: Vec<E>,
 }
 
-impl<E: Entity> ContainerCreator for BasicCreator<E> {
+impl<E: Entity> ContainerCreator<Ray, Hit> for BasicCreator<E> {
     type Output = BasicContainer<E>;
 
     fn new() -> Self {
@@ -59,7 +59,7 @@ impl<E: Entity> ContainerCreator for BasicCreator<E> {
     }
 }
 
-impl<E: Entity> EntitiesAdder<E> for BasicCreator<E> {
+impl<E: Entity> EntitiesAdder<E, Ray, Hit> for BasicCreator<E> {
     fn add_entities(&mut self, v: Vec<E>) {
         self.entities = v;
     }

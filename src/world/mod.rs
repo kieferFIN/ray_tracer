@@ -49,7 +49,7 @@ impl<E> WorldBuilder<E> {
 }
 
 impl<E: Entity> WorldBuilder<E> {
-    pub fn build<CC: EntitiesAdder<E>>(self) -> Arc<World<CC::Output>> {
+    pub fn build<CC: EntitiesAdder<E, Ray, Hit>>(self) -> Arc<World<CC::Output>> {
         let mut cc = CC::new();
         cc.add_entities(self.entities);
         let w = World {
@@ -67,7 +67,7 @@ pub struct World<C> {
     light: Light,
 }
 
-impl<C: Container> World<C> {
+impl<C: Container<Ray, Hit>> World<C> {
     pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
         let mut rng = SmallRng::from_entropy();
         RayBouncer::new(steps, ray, &self.entities)
@@ -103,15 +103,15 @@ impl<C: Container> World<C> {
     }
 }
 
-struct RayBouncer<'a, C> {
-    ray: Ray,
+struct RayBouncer<'a, R, C> {
+    ray: R,
     entities: &'a C,
     steps: u32,
     rng: SmallRng,
 }
 
-impl<'a, C> RayBouncer<'a, C> {
-    fn new(steps: u32, ray: Ray, entities: &'a C) -> Self {
+impl<'a, R, C> RayBouncer<'a, R, C> {
+    fn new(steps: u32, ray: R, entities: &'a C) -> Self {
         RayBouncer {
             ray,
             entities,
@@ -121,7 +121,7 @@ impl<'a, C> RayBouncer<'a, C> {
     }
 }
 
-impl<'a, C: Container> Iterator for RayBouncer<'a, C> {
+impl<'a, C: Container<Ray, Hit>> Iterator for RayBouncer<'a, Ray, C> {
     type Item = Hit;
 
     fn next(&mut self) -> Option<Self::Item> {
