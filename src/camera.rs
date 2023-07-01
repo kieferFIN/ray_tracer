@@ -140,7 +140,7 @@ impl Camera {
                         .sample_iter(&Standard)
                         .take(rpp)
                         .map(|(x_off, y_off): (f64, f64)| {
-                            let weight = (x_off - 0.5).powi(2) + (y_off - 0.5).powi(2);
+                            let weight = 1.0 - (x_off - 0.5).powi(2) + (y_off - 0.5).powi(2);
                             let c = w.shoot_ray(
                                 Ray::look_at(
                                     orig,
