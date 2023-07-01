@@ -68,7 +68,7 @@ pub struct World<C> {
 }
 
 impl<C: Container<Ray, Hit>> World<C> {
-    pub fn shoot_ray(&self, ray: Ray, steps: u32) -> Color {
+    pub fn shoot_ray(&self, ray: Ray, steps: u8) -> Color {
         let mut rng = SmallRng::from_entropy();
         RayBouncer::new(steps, ray, &self.entities)
             .scan(Color::white(), |c, h| {
@@ -106,12 +106,12 @@ impl<C: Container<Ray, Hit>> World<C> {
 struct RayBouncer<'a, R, C> {
     ray: R,
     entities: &'a C,
-    steps: u32,
+    steps: u8,
     rng: SmallRng,
 }
 
 impl<'a, R, C> RayBouncer<'a, R, C> {
-    fn new(steps: u32, ray: R, entities: &'a C) -> Self {
+    fn new(steps: u8, ray: R, entities: &'a C) -> Self {
         RayBouncer {
             ray,
             entities,
@@ -131,8 +131,6 @@ impl<'a, C: Container<Ray, Hit>> Iterator for RayBouncer<'a, Ray, C> {
             if let Some(hit) = self.entities.closest_hit(&self.ray) {
                 let dir = random_dir_in_hemisphere(&hit.n, &mut self.rng);
                 self.ray = Ray::new(hit.p, dir);
-                //let R = 2.0 * (hit.n * hit.n.transpose()) - Matrix3::identity();
-                //self.ray = Ray::new(hit.p, -R * self.ray.dir);
                 self.steps -= 1;
                 Some(hit.clone())
             } else {

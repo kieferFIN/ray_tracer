@@ -36,6 +36,18 @@ impl Color {
     pub fn gray(c: f64) -> Color {
         Color { r: c, g: c, b: c }
     }
+
+    pub fn to_raw(&self) -> [u8; 3] {
+        let tranform = |c: f64| -> u8 {
+            let corrected = if c > 0.0031308 {
+                c.powf(0.416666) * 1.055 - 0.055
+            } else {
+                c * 12.92
+            };
+            (corrected.max(0.0).min(1.0) * 255.0) as u8
+        };
+        [tranform(self.r), tranform(self.g), tranform(self.b)]
+    }
 }
 
 impl From<(f64, f64, f64)> for Color {
@@ -46,11 +58,7 @@ impl From<(f64, f64, f64)> for Color {
 
 impl From<&Color> for PixelColor {
     fn from(c: &Color) -> Self {
-        image::Rgb([
-            (c.r.max(0.0).min(1.0) * 255.0) as u8,
-            (c.g.max(0.0).min(1.0) * 255.0) as u8,
-            (c.b.max(0.0).min(1.0) * 255.0) as u8,
-        ])
+        image::Rgb(c.to_raw())
     }
 }
 

@@ -78,14 +78,15 @@ impl L {
 #[derive(Debug, Deserialize)]
 struct C {
     pub orig: Option<(f64, f64, f64)>,
-    pub size: Option<(u32, u32)>,
+    pub size: Option<(usize, usize)>,
     pub look_at: Option<(f64, f64, f64)>,
     pub up: Option<(f64, f64, f64)>,
-    pub horizontal_angle: Option<u32>,
-    pub super_sampling_factor: Option<u32>,
-    pub rays_per_pixel: Option<u32>,
-    pub steps: Option<u32>,
-    pub threads: Option<u32>,
+    pub horizontal_angle: Option<u8>,
+    pub super_sampling_factor: Option<u8>,
+    pub rays_per_pixel: Option<u8>,
+    pub steps: Option<u8>,
+    pub threads: Option<u8>,
+    pub block_size: Option<usize>,
 }
 
 impl C {
@@ -117,6 +118,9 @@ impl C {
         }
         if let Some(v) = self.threads {
             cb.threads = v;
+        }
+        if let Some(v) = self.block_size {
+            cb.block_size = v;
         }
         cb.build()
     }
