@@ -90,7 +90,7 @@ impl<E: Entity> Container<Ray, Hit> for SimpleBVH<E> {
         let mut hit: Option<Hit> = None;
         let mut t = f64::INFINITY;
         for (aabb, i) in &self.nodes {
-            if let Some((tmin, tmax)) = aabb.intersect(r) {
+            if let Some((tmin, _tmax)) = aabb.intersect(r) {
                 if tmin < t {
                     if let Some(h) = self.entities[*i].hit(r) {
                         if h.t < t {
@@ -106,10 +106,10 @@ impl<E: Entity> Container<Ray, Hit> for SimpleBVH<E> {
 
     fn any_hit<F: Fn(Hit) -> bool>(&self, r: &Ray, f: F) -> bool {
         for (aabb, i) in &self.nodes {
-            if let Some((tmin, tmax)) = aabb.intersect(r) {
+            if let Some((tmin, _tmax)) = aabb.intersect(r) {
                 if tmin < 1.0 {
                     if let Some(h) = self.entities[*i].hit(r) {
-                        if h.t < 1.0 {
+                        if f(h) {
                             return true;
                         }
                     }

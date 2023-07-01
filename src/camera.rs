@@ -128,7 +128,7 @@ impl Camera {
                 let mut buffer = vec![Color::black(); width];
                 for y in 0..height_per_thread {
                     for x in 0..width {
-                        let (sum, weight_sum) = rng
+                        let (sum, weight_sum) = (&mut rng)
                             .sample_iter(&Standard)
                             .take(rpp)
                             .map(|(x_off, y_off): (f64, f64)| {

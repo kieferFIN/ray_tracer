@@ -14,7 +14,7 @@ use crate::world::entities::Entity;
 
 use crate::world::container::EntitiesAdder;
 use rand::rngs::SmallRng;
-use rand::{FromEntropy, Rng};
+use rand::{Rng, SeedableRng};
 use std::f64;
 use std::f64::consts::PI;
 use std::sync::Arc;

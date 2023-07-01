@@ -1,4 +1,3 @@
-use nalgebra::partial_cmp;
 use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign};
 

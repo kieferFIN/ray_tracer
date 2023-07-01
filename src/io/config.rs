@@ -1,5 +1,5 @@
 use crate::camera::Camera;
-use crate::world::container::{ContainerCreator, EntitiesAdder};
+use crate::world::container::EntitiesAdder;
 use crate::world::entities::Triangle;
 use crate::world::{Light, World};
 use crate::{read_obj_file, CameraBuilder, Hit, Ray, ToVector, WorldBuilder};
@@ -102,6 +102,9 @@ impl C {
         }
         if let Some(v) = self.up {
             cb.up = v.to_vector();
+        }
+        if let Some(v) = self.horizontal_angle {
+            cb.horizontal_angle = v
         }
         if let Some(v) = self.super_sampling_factor {
             cb.super_sampling_factor = v;
